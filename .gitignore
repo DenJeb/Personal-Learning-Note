@@ -1,0 +1,15 @@
+# Obsidian 配置（本地使用，不上传）
+.obsidian/
+
+# 助手配置（本地使用，不上传）
+CLAUDE.md
+AGENTS.md
+
+# Copilot 缓存
+.copilot/
+.opencode/
+
+# 通用
+.trash/
+.DS_Store
+Thumbs.db
