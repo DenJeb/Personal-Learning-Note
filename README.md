@@ -62,6 +62,8 @@
 
 2. 浏览器打开 <http://localhost:8000>，即可在网页中浏览全部笔记。
 
+**在线阅读（GitHub Pages）：** 仓库已开启 GitHub Pages，可直接访问 <https://denjeb.github.io/Personal-Learning-Note/>。
+
 **用 Obsidian 阅读（推荐）：**
 
 1. 克隆仓库到本地：
