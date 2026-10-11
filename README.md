@@ -64,18 +64,12 @@
 
 **在线阅读（GitHub Pages）：** 仓库已开启 GitHub Pages，可直接访问 <https://denjeb.github.io/Personal-Learning-Note/>。
 
-**用 Obsidian 阅读（推荐）：**
+**用 Obsidian 阅读：**
 
 1. 克隆仓库到本地：
 
    ```bash
    git clone https://github.com/DenJeb/Personal-Learning-Note.git
    ```
-
-   或者直接下载 ZIP 并解压。
 2. 打开 Obsidian，选择「打开本地仓库（Open folder as vault）」。
-3. 选择刚才克隆/解压的文件夹，即可像普通笔记一样浏览和搜索。
-
----
-
-<p align="center">✨ 用 Obsidian 打开，体验更佳</p>
+3. 选择刚才克隆的文件夹。
