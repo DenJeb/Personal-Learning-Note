@@ -363,7 +363,7 @@
       const href = a.getAttribute('href') || '';
       if (href.endsWith('.md')) {
         e.preventDefault();
-        location.hash = '#/' + encodeURIComponent(href);
+        location.hash = '#/' + href;
       }
     });
 
