@@ -61,7 +61,7 @@ ndarray 的常用创建方式如下：
 | 等间隔数列 | `arr = np.linspace(start, stop, num)` | 左闭右闭，num 为元素个数 |
 | 等比数列 | `arr = np.logspace(start, stop, num, base)` | 左闭右闭，base 为底数 |
 | 单位矩阵 | `arr = np.eye(行, 列)` | 主对角线为 1，其余为 0 |
-| 对角矩阵 | `arr = np.diag(对角元素1, ...)` | 按给定元素构造对角矩阵 |
+| 对角矩阵 | `arr = np.diag([1, 2, 3])` | 由一维数组构造对角矩阵 |
 | 随机数组 | `arr = np.random.rand(行, 列)` | 0~1 之间的随机数 |
 | 指定范围的随机浮点数组 | `arr = np.random.uniform(low, high, size)` | 均匀分布 |
 | 指定范围的随机整数数组 | `arr = np.random.randint(low, high, size)` | 均匀分布的整数 |
@@ -76,7 +76,7 @@ ndarray 的常用创建方式如下：
 
 - 取所有元素：`arr[:]`
 - 取 [m, n) 的元素：`arr[m:n]`
-- 取 [m, n) 的元素，步长为 k：`arr[slice(m:n:k)]`（k = -1 表示从后往前取）
+- 取 [m, n) 的元素，步长为 k：`arr[m:n:k]`（k = -1 表示从后往前取）
 - bool 索引：`arr[(arr > m) & (arr < n)]`
 
 #### 1.3.2 二维数组
@@ -278,7 +278,7 @@ print(df.name)               # 通过属性名访问单列
 print(df[['name', 'age']])   # 访问多列
 print(df.tail(3))            # 访问后 3 行
 print(df[df['age'] >= 18])   # bool 索引（筛选年龄 >= 18 的行）
-print(df.sample)             # 随机抽样
+print(df.sample())           # 随机抽样
 ```
 
 #### 2.2.4 DataFrame 的常用方法
@@ -349,7 +349,7 @@ print(data)
 #### 2.3.5 数据分箱
 
 ```Python
-# data 沿用 2.3.4 中分列前的 DataFrame
+# data 沿用 2.3.4 的 data
 
 # 分箱：按分数区间划分等级
 chinese_grade = pd.cut(data['chinese'], bins=[0, 60, 80, 100]).value_counts()
@@ -525,9 +525,9 @@ plt.yticks(range(0, 110, 10))
 
 # 数据准备
 areas = ['中国', '美国', '俄罗斯', '欧洲', '日本', '其他']
-gdp = [19.6, 30.5, 2.7, 19.4, 4.3, 33.9]
+gdp = [17.8, 27.6, 2.4, 17.6, 3.9, 30.7]
 colors = ['cornflowerblue', 'palegreen', 'navajowhite', 'lightcoral', 'hotpink', 'skyblue']
-explode = [0.1, 0.0, 0.0, 0.0, 0.0, 0.0]  # 爆炸式饼图设计（数值表示突出块的位置），可用可不用
+explode = [0.1, 0.0, 0.0, 0.0, 0.0, 0.0]  # 爆炸式饼图设计（数值为偏移量，即半径的分数，越大离圆心越远），可用可不用
 
 # 绘制饼图
 plt.pie(gdp,
@@ -609,7 +609,7 @@ data = {
 }
 
 plt.figure(figsize=(10, 7.5))  # 图表尺寸与 3.2 不同，单独设置
-plt.boxplot(data.values(), tick_labels=data.keys())  # tick_labels 表示 x 轴的标签
+plt.boxplot(data.values(), labels=data.keys())  # labels 表示 x 轴的标签（Matplotlib 3.9+ 该参数更名为 tick_labels）
 
 # 添加标题
 plt.title("各科成绩分布", fontsize=20)
@@ -625,7 +625,7 @@ plt.grid(True, axis='y', linestyle='--', alpha=0.5)
 
 ### 3.7 seaborn <a id="3-7"></a>
 
-matplotlib 能绘制的图，seaborn 也能绘制，且更强大。seaborn 的 `pairplot()` 函数能一次性绘制多种图表。下面用 seaborn 重绘 3.3 的条形图：
+seaborn 提供更高层的统计图接口，覆盖多数常用图。下面用 seaborn 重绘 3.3 的条形图：
 
 ```Python
 import pandas as pd

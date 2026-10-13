@@ -1,22 +1,27 @@
 <h1 align="center">🧠 个人学习笔记</h1>
 
-<p align="center">随学随记 —— 计算机科学（CS）学习笔记，涵盖编程语言、数据库、网络与 Linux</p>
+<p align="center">随学随记 —— 计算机科学（CS）个人学习笔记，涵盖编程语言、数据库、网络与 Linux</p>
 
 <p align="center">
   <img alt="笔记" src="https://img.shields.io/badge/笔记-7篇-4285F4">
   <img alt="分类" src="https://img.shields.io/badge/分类-5个-34A853">
-  <img alt="Obsidian" src="https://img.shields.io/badge/Obsidian_Vault-7C3AED">
 </p>
 
 ## 📖 仓库简介
 
-这是一个持续更新的个人学习笔记仓库，同时也是一个 **Obsidian 库（Vault）**，可以直接用 Obsidian 打开阅读。笔记按技术方向分目录整理：
+这是一个持续更新的个人学习笔记仓库，笔记按技术方向分目录整理：
 
 - 💻 **C++ 篇** —— 面向对象编程、STL
 - 🐍 **Python 篇** —— 数据分析、FastAPI
 - 🗄️ **数据库** —— MySQL
 - 🌐 **网络** —— 计算机网络基础
 - 🐧 **Linux** —— Ubuntu 常用命令
+
+---
+
+## 🚀 快速开始
+
+**在线阅读链接👉** <https://denjeb.github.io/Personal-Learning-Note/>。
 
 ---
 
@@ -46,30 +51,18 @@
 
 ---
 
-## 🚀 快速开始
+## 📮 补充与纠错
 
-**在线阅读：** 直接点击上方目录中的链接即可。
+- ❌ 发现笔记内容有误
+- 💡 有想要补充的知识点
+- 📝 对结构或排版有建议
 
-**用浏览器阅读（网页版）：**
+欢迎提交 [Issue](https://github.com/DenJeb/Personal-Learning-Note/issues) 或 Pull Request。
 
-本仓库自带一个网页版笔记页面（`index.html`），带侧边栏导航，打开即用：
+> 本仓库为个人学习笔记，随学习进度持续更新，难免有疏漏，内容仅供参考。
 
-1. 在仓库根目录启动本地服务器：
+---
 
-   ```bash
-   python -m http.server 8000
-   ```
+## 📄 许可协议
 
-2. 浏览器打开 <http://localhost:8000>，即可在网页中浏览全部笔记。
-
-**在线阅读（GitHub Pages）：** 仓库已开启 GitHub Pages，可直接访问 <https://denjeb.github.io/Personal-Learning-Note/>。
-
-**用 Obsidian 阅读：**
-
-1. 克隆仓库到本地：
-
-   ```bash
-   git clone https://github.com/DenJeb/Personal-Learning-Note.git
-   ```
-2. 打开 Obsidian，选择「打开本地仓库（Open folder as vault）」。
-3. 选择刚才克隆的文件夹。
+本仓库笔记采用 [CC BY-NC-SA 4.0](LICENSE) 协议发布（署名-非商业性使用-相同方式共享），著作权人：DenJeb。转载或引用请注明出处。

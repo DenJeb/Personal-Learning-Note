@@ -5,3 +5,6 @@
 .trash/
 .DS_Store
 Thumbs.db
+
+# Claude Code obsidian 配置
+.claudian/

@@ -36,7 +36,7 @@
 - 尾部插入快（摊还 O(1)）
 - 支持随机访问 O(1)
 
-#### 1.1.2 常用函数：
+#### 1.1.2 常用函数
 
 | 函数 | 作用 |
 |---|---|
@@ -225,7 +225,7 @@ priority_queue<int, vector<int>, greater<int>> pq;
 ### 2.1 特性 <a id="2-1"></a>
 
 - “广义指针”，用来遍历容器元素，连接容器和算法
-- C++11可用auto代替iterator
+- C++11 可用 auto 推导迭代器类型
 
 ### 2.2 函数 <a id="2-2"></a>
 
@@ -249,8 +249,9 @@ priority_queue<int, vector<int>, greater<int>> pq;
 
 ### 2.5 迭代器失效 <a id="2-5"></a>
 
-- vector 插入/删除元素后，原迭代器可能失效（可能重新分配内存）
+- vector：插入元素可能因扩容（重新分配内存）导致所有迭代器失效；erase 删除元素即使不扩容，被删位置及其后的迭代器也失效
 - list、set、map 删除元素后，只有指向被删元素的迭代器失效
+- list、set、map 插入元素不会使迭代器失效
 - 解决办法：用 erase 返回的新迭代器
 
 ```C++
@@ -260,6 +261,8 @@ it = v.erase(it); // erase 返回下一个元素的迭代器
 ---
 
 ## 3. algorithm：对数据操作（sort/find...） <a id="algorithm"></a>
+
+> 💡 binary_search / lower_bound / upper_bound 要求区间已有序；merge 需先给输出容器预留足够容量（如 c.resize(a.size() + b.size())）
 
 | 功能 | 用法 |
 |---|---|

@@ -128,7 +128,6 @@ USE test;
 SELECT DATABASE();
 ```
 
----
 
 #### 1.3.2 表操作
 
@@ -240,7 +239,6 @@ INSERT INTO users
 VALUES (4, 'Bob', 21);
 ```
 
----
 
 #### 1.4.2 UPDATE
 
@@ -270,7 +268,6 @@ UPDATE users
 SET age = 20;
 ```
 
----
 
 #### 1.4.3 DELETE
 
@@ -311,7 +308,6 @@ SELECT username, age
 FROM users;
 ```
 
----
 
 #### 1.5.2 字段别名
 
@@ -329,7 +325,6 @@ SELECT username name
 FROM users;
 ```
 
----
 
 #### 1.5.3 条件查询
 
@@ -352,7 +347,6 @@ WHERE age > 18;
 | `>=`        | 大于等于 |
 | `<=`        | 小于等于 |
 
----
 
 #### 1.5.4 逻辑运算符
 
@@ -388,7 +382,6 @@ FROM users
 WHERE NOT age = 18;
 ```
 
----
 
 #### 1.5.5 BETWEEN
 
@@ -411,7 +404,6 @@ WHERE age >= 18
 
 > 💡 `BETWEEN ... AND ...` 包含两端的值。
 
----
 
 #### 1.5.6 IN
 
@@ -433,7 +425,6 @@ WHERE age = 18
    OR age = 22;
 ```
 
----
 
 #### 1.5.7 LIKE
 
@@ -455,7 +446,6 @@ FROM users
 WHERE username LIKE 'Tom_';
 ```
 
----
 
 #### 1.5.8 NULL
 
@@ -485,7 +475,6 @@ WHERE age IS NOT NULL;
 
 > ⚠️ `NULL` 表示“没有值”，不是普通的数据值。
 
----
 
 #### 1.5.9 DISTINCT
 
@@ -495,6 +484,121 @@ WHERE age IS NOT NULL;
 SELECT DISTINCT age
 FROM users;
 ```
+
+
+#### 1.5.10 聚合函数
+
+> **聚合函数**：对一列数据做整体计算，返回单个结果。
+>
+> 💡 本小节及 1.5.11~1.5.13 的示例基于 1.8.3 定义的 `dept`/`emp` 表与 1.9.2 的示例数据，首次阅读可先跳到 1.9.2 查看。
+
+| 函数      | 作用             |
+| --------- | ---------------- |
+| COUNT     | 统计数量         |
+| MAX / MIN | 最大值 / 最小值  |
+| SUM       | 求和             |
+| AVG       | 平均值           |
+
+```sql
+-- 查询员工总数、最高薪资、平均薪资
+SELECT COUNT(*), MAX(salary), AVG(salary)
+FROM emp;
+```
+
+> ⚠️ 聚合函数不计算 `NULL` 值（`COUNT(*)` 除外，它统计的是行数）。
+>
+> 💡 `COUNT(字段)` 会忽略该字段为 `NULL` 的行，`COUNT(*)` 统计所有行。
+
+#### 1.5.11 分组查询
+
+> **分组查询**：按某列分组（`GROUP BY`），对每组分别做聚合计算。
+
+```sql
+SELECT 分组字段, 聚合函数(...)
+FROM 表
+[WHERE 条件]
+GROUP BY 分组字段
+[HAVING 分组后过滤条件];
+```
+
+```sql
+-- 查询每个部门的平均薪资
+SELECT dept_id, AVG(salary) AS avg_salary
+FROM emp
+WHERE dept_id IS NOT NULL
+GROUP BY dept_id;
+```
+
+`WHERE` 与 `HAVING` 的区别：
+
+| 关键字 | 过滤时机 | 能否使用聚合函数 |
+| ------ | -------- | ---------------- |
+| WHERE  | 分组之前 | 不能             |
+| HAVING | 分组之后 | 能               |
+
+```sql
+-- 查询平均薪资高于 6500 的部门
+SELECT dept_id, AVG(salary) AS avg_salary
+FROM emp
+WHERE dept_id IS NOT NULL
+GROUP BY dept_id
+HAVING AVG(salary) > 6500;
+```
+
+#### 1.5.12 排序查询
+
+> **排序查询**：`ORDER BY` 对查询结果排序。
+
+```sql
+-- 按薪资升序（ASC 为默认值，可省略）
+SELECT name, salary
+FROM emp
+ORDER BY salary;
+
+-- 按薪资降序
+SELECT name, salary
+FROM emp
+ORDER BY salary DESC;
+
+-- 多字段排序：先按部门升序，同部门内按薪资降序
+SELECT name, dept_id, salary
+FROM emp
+ORDER BY dept_id, salary DESC;
+```
+
+#### 1.5.13 分页查询
+
+> **分页查询**：`LIMIT` 限制返回的记录数，常配合起始索引实现分页。
+
+```sql
+-- 第 1 页：从索引 0 开始取 2 条
+SELECT *
+FROM emp
+LIMIT 0, 2;
+
+-- 第 2 页：跳过前 2 条，取 2 条
+SELECT *
+FROM emp
+LIMIT 2, 2;
+```
+
+> 💡 语法为 `LIMIT 起始索引, 查询条数`，起始索引从 0 开始。第 n 页的起始索引 = (n - 1) × 每页条数。
+
+#### 1.5.14 执行顺序
+
+DQL 的书写顺序与执行顺序不同：
+
+```sql
+SELECT ...          -- 5
+FROM ...            -- 1
+WHERE ...           -- 2
+GROUP BY ...        -- 3
+HAVING ...          -- 4
+ORDER BY ...        -- 6
+LIMIT ...;          -- 7
+```
+
+> 💡 由此可知：`WHERE` 中不能使用 `SELECT` 里定义的别名（`WHERE` 先于 `SELECT` 执行），而 `ORDER BY` 中可以。
 
 ---
 
@@ -531,7 +635,6 @@ IDENTIFIED BY '654321';
 DROP USER 'dev'@'localhost';
 ```
 
----
 
 #### 1.6.2 权限管理
 
@@ -633,7 +736,6 @@ SELECT LENGTH('你好'), CHAR_LENGTH('你好');
 
 > ⚠️ `LENGTH` 统计的是字节数。utf8mb4 下一个汉字占 3 个字节，统计字符个数要用 `CHAR_LENGTH`。
 
----
 
 #### 1.7.2 数值函数
 
@@ -681,7 +783,6 @@ SELECT ABS(-10);
 
 > 💡 `RAND()` 常用于生成随机验证码或随机抽取数据。
 
----
 
 #### 1.7.3 日期函数
 
@@ -722,7 +823,6 @@ SELECT DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s');
 
 > 💡 常用格式符：`%Y` 四位年份、`%m` 月份、`%d` 日期、`%H` 24 小时制小时、`%i` 分钟、`%s` 秒。
 
----
 
 #### 1.7.4 流程函数
 
@@ -778,7 +878,7 @@ FROM users;
 
 > ⚠️ `CHECK` 从 MySQL 8.0.16 开始才真正校验，之前的版本语法上支持但不生效。
 >
-> 💡 主键 vs 唯一约束：主键非空且唯一，一张表只能有一个；唯一约束允许一个 `NULL`，一张表可以有多个。`AUTO_INCREMENT` 一般配合主键使用，插入时不指定值会自动递增。
+> 💡 主键 vs 唯一约束：主键非空且唯一，一张表只能有一个；唯一约束允许任意多个 `NULL`（`NULL` 之间不相等，不视为重复），一张表可以有多个唯一约束。`AUTO_INCREMENT` 一般配合主键使用，插入时不指定值会自动递增。
 
 #### 1.8.2 约束演示
 
@@ -858,13 +958,319 @@ ON DELETE CASCADE;
 
 ### 1.9 多表查询
 
+#### 1.9.1 多表关系
+
+实际项目中多张表之间存在关联，常见关系有三种：
+
+**一对多（多对一）**：如部门与员工，一个部门有多个员工。在多的一方（`emp`）建立外键指向一的一方：
+
+```sql
+CREATE TABLE emp (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(20) NOT NULL,
+    dept_id INT,
+    CONSTRAINT fk_emp_dept FOREIGN KEY (dept_id) REFERENCES dept (id)
+);
+```
+
+**多对多**：如学生与课程，一个学生选多门课，一门课有多个学生。需要建立**中间表**，拆成两个一对多：
+
+```sql
+-- student（id, name）、course（id, name）表结构略
+CREATE TABLE student_course (
+    student_id INT,
+    course_id INT,
+    PRIMARY KEY (student_id, course_id),
+    CONSTRAINT fk_sc_student FOREIGN KEY (student_id) REFERENCES student (id),
+    CONSTRAINT fk_sc_course FOREIGN KEY (course_id) REFERENCES course (id)
+);
+```
+
+**一对一**：如用户与用户详情。在任意一方建立外键，并给该外键添加 `UNIQUE` 约束。
+
+#### 1.9.2 多表查询概述
+
+直接同时查询多张表会产生**笛卡尔积**：结果为两张表所有行的两两组合，大量组合没有实际意义。
+
+```sql
+SELECT *
+FROM emp, dept;
+-- 行数 = emp 行数 × dept 行数
+```
+
+通过**连接条件**消除笛卡尔积：
+
+```sql
+SELECT e.name, d.name
+FROM emp e, dept d
+WHERE e.dept_id = d.id;
+```
+
+> 💡 多表查询时通常给表起别名（`AS` 可省略），用 `表别名.字段名` 指代字段。
+
+本节示例数据（`emp` 在 1.8.3 基础上增加 `salary` 薪资、`manager_id` 领导 id 两列，`Bob` 的 `dept_id` 为 `NULL` 供外连接演示）：
+
+```sql
+INSERT INTO dept VALUES
+    (1, '研发部'), (2, '市场部'), (3, '财务部'), (4, '销售部');
+
+INSERT INTO emp VALUES
+    (1, 'Tom', 1, 8000, NULL),
+    (2, 'Jack', 1, 6000, 1),
+    (3, 'Alice', 2, 7000, 1),
+    (4, 'Bob', NULL, 5000, 2);
+```
+
+#### 1.9.3 内连接
+
+> **内连接**：只返回两张表之间能匹配上的数据。
+
+隐式写法（`WHERE` 连接条件）：
+
+```sql
+SELECT e.name, d.name
+FROM emp e, dept d
+WHERE e.dept_id = d.id;
+```
+
+显式写法（`INNER JOIN ... ON`，推荐）：
+
+```sql
+SELECT e.name, d.name
+FROM emp e
+INNER JOIN dept d ON e.dept_id = d.id;
+```
+
+> ⚠️ 没有部门的 `Bob`（`dept_id` 为 `NULL`）不会出现在内连接结果中。
+
+#### 1.9.4 外连接
+
+> **外连接**：返回一方表的全部数据，另一表无匹配时补 `NULL`。
+
+左外连接（包含左表全部）：
+
+```sql
+SELECT e.name, d.name
+FROM emp e
+LEFT JOIN dept d ON e.dept_id = d.id;
+-- 包含所有员工，Bob 的部门名显示为 NULL
+```
+
+右外连接（包含右表全部）：
+
+```sql
+SELECT e.name, d.name
+FROM emp e
+RIGHT JOIN dept d ON e.dept_id = d.id;
+-- 包含所有部门，没有员工的部门员工名显示为 NULL
+```
+
+> 💡 左外连接最常用。右外连接都可以换成左外连接（两张表互换位置），掌握一种即可。
+
+#### 1.9.5 自连接
+
+> **自连接**：表与自身进行连接。必须给表起**不同的别名**来区分角色。
+
+```sql
+-- 查询员工及其直属领导（manager_id 指向本表的 id）
+SELECT e.name AS 员工, m.name AS 领导
+FROM emp e
+LEFT JOIN emp m ON e.manager_id = m.id;
+```
+
+> 💡 使用左外连接是为了保留没有领导的员工（如 `Tom`）。
+
+#### 1.9.6 联合查询
+
+> **联合查询**：用 `UNION` 把多个查询的结果合并成一个结果集。
+
+```sql
+SELECT name FROM emp WHERE salary > 7000
+UNION
+SELECT name FROM emp WHERE dept_id = 2;
+```
+
+- `UNION`：合并并**去重**
+- `UNION ALL`：合并但**不去重**
+
+> ⚠️ 各查询的列数必须一致，字段类型也要兼容。
+
+#### 1.9.7 子查询
+
+> **子查询**：SQL 语句中嵌套的 `SELECT` 语句（写在括号内），外层的为主查询。
+
+按返回结果分类：
+
+| 类型       | 返回结果       | 常用操作符              |
+| ---------- | -------------- | ----------------------- |
+| 标量子查询 | 单个值         | `=  <>  >  <`           |
+| 列子查询   | 一列（多行）   | `IN  NOT IN  ANY  ALL`  |
+| 行子查询   | 一行多列       | `=  <>  IN`             |
+| 表子查询   | 多行多列       | 作为临时表（`FROM` 后） |
+
+#### 1.9.8 标量子查询
+
+返回单个值，常用 `=` 等比较运算符：
+
+```sql
+-- 查询在研发部工作的员工
+SELECT *
+FROM emp
+WHERE dept_id = (SELECT id FROM dept WHERE name = '研发部');
+```
+
+#### 1.9.9 列子查询
+
+返回一列多行，常配合 `IN`：
+
+```sql
+-- 查询有员工的部门
+SELECT *
+FROM dept
+WHERE id IN (SELECT dept_id FROM emp WHERE dept_id IS NOT NULL);
+```
+
+- `ANY` / `SOME`：满足子查询结果中的**任意一个**即可
+
+```sql
+-- 查询薪资比研发部任意一人高的员工
+SELECT *
+FROM emp
+WHERE salary > ANY (SELECT salary FROM emp WHERE dept_id = 1);
+```
+
+- `ALL`：必须满足子查询结果中的**全部**
+
+```sql
+-- 查询薪资比市场部所有人都高的员工
+SELECT *
+FROM emp
+WHERE salary > ALL (SELECT salary FROM emp WHERE dept_id = 2);
+```
+
+#### 1.9.10 行子查询
+
+返回一行多列，用括号包裹多列进行比较：
+
+```sql
+-- 查询与 Tom 薪资、部门都相同的员工
+SELECT *
+FROM emp
+WHERE (salary, dept_id) = (SELECT salary, dept_id FROM emp WHERE name = 'Tom');
+```
+
+#### 1.9.11 表子查询
+
+返回多行多列，作为临时表放在 `FROM` 后（必须起别名）：
+
+```sql
+-- 查询薪资高于本部门平均薪资的员工
+SELECT e.name, e.salary
+FROM emp e
+JOIN (SELECT dept_id, AVG(salary) AS avg_salary
+      FROM emp
+      WHERE dept_id IS NOT NULL
+      GROUP BY dept_id) t
+  ON e.dept_id = t.dept_id
+WHERE e.salary > t.avg_salary;
+```
+
 ---
 
 ### 1.10 事务
 
+#### 1.10.1 事务简介
+
+> **事务**：一组操作的集合，是不可分割的工作单位——这些操作**要么同时成功，要么同时失败**。
+
+典型场景：转账（A 账户 -500，B 账户 +500），两步必须同时成功或同时失败，否则会出现数据错误。
+
+默认情况下，MySQL 中每条 DML 语句都是自动提交的，无法保证一组操作的整体性，因此需要事务来控制。
+
+#### 1.10.2 事务操作
+
+示例数据：
+
+```sql
+CREATE TABLE account (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(20) NOT NULL,
+    money DECIMAL(10, 2)
+);
+
+INSERT INTO account VALUES
+    (1, '张三', 1000),
+    (2, '李四', 1000);
+```
+
+**方式一：修改提交方式**
+
+```sql
+SELECT @@autocommit;    -- 1：自动提交，0：手动提交
+SET @@autocommit = 0;   -- 改为手动提交
+
+UPDATE account SET money = money - 500 WHERE name = '张三';
+UPDATE account SET money = money + 500 WHERE name = '李四';
+
+COMMIT;                 -- 全部成功 → 提交
+ROLLBACK;               -- 出错 → 回滚，撤销事务内所有操作
+```
+
+**方式二：显式开启事务（推荐）**
+
+```sql
+START TRANSACTION;      -- 或 BEGIN
+
+UPDATE account SET money = money - 500 WHERE name = '张三';
+UPDATE account SET money = money + 500 WHERE name = '李四';
+
+COMMIT;                 -- 全部成功 → 提交
+ROLLBACK;               -- 任一步失败 → 回滚
+```
+
+#### 1.10.3 四大特性 ACID
+
+| 特性                     | 说明                                         |
+| ------------------------ | -------------------------------------------- |
+| 原子性 Atomicity         | 事务是最小的操作单元，要么全部成功，要么全部失败 |
+| 一致性 Consistency       | 事务完成后，所有数据必须保持一致的合法状态   |
+| 隔离性 Isolation         | 多个事务并发执行时互不干扰（由隔离级别保证） |
+| 持久性 Durability        | 事务一旦提交，对数据的改变就是永久的         |
+
+#### 1.10.4 并发事务问题
+
+| 问题       | 描述                                                         |
+| ---------- | ------------------------------------------------------------ |
+| 脏读       | 一个事务读到了另一个事务**未提交**的数据                     |
+| 不可重复读 | 同一事务两次读取同一条记录，结果不同（期间被其他事务修改）   |
+| 幻读       | 同一事务按条件查询到的行数前后不一致（期间被其他事务插入/删除） |
+
+#### 1.10.5 事务隔离级别
+
+| 隔离级别           | 脏读 | 不可重复读 | 幻读 | 说明                       |
+| ------------------ | ---- | ---------- | ---- | -------------------------- |
+| READ UNCOMMITTED   | 发生 | 发生       | 发生 | 性能最高，问题最多         |
+| READ COMMITTED     | 解决 | 发生       | 发生 |                            |
+| REPEATABLE READ    | 解决 | 解决       | 发生 | MySQL 默认级别             |
+| SERIALIZABLE       | 解决 | 解决       | 解决 | 串行执行，性能最低         |
+
+```sql
+-- 查看隔离级别
+SELECT @@TRANSACTION_ISOLATION;
+
+-- 设置隔离级别（SESSION 当前会话 / GLOBAL 全局，二选一）
+SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
+```
+
+> 💡 隔离级别越高，数据越安全，但性能越低。
+>
+> ⚠️ MySQL 默认级别 REPEATABLE READ 在实际中（InnoDB 的 MVCC 机制下）基本不会出现幻读；5.7 及更早版本查看隔离级别的变量名为 `tx_isolation`。
+
 ---
 
 ## 2. 进阶篇
+
+> 以下章节待补充。
 
 ### 2.1 存储引擎
 

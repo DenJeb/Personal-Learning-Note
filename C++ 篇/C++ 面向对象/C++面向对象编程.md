@@ -15,7 +15,7 @@ class 名称{
 
 struct默认权限为公开，class默认权限为私有。
 
-除此之外，class还可以设置权限：
+除此之外，class与struct都能设置权限，区别在默认权限不同：
 
 ```C++
 class 名称{
@@ -395,7 +395,7 @@ public:
     // Person 后面不加 & 就是 20 岁
     Person& PersonAddAge(Person &p){  
         this->age += p.age;
-        return *this; // this指向p2的指针，*this指向p2本体
+        return *this; // this 指向调用者对象（p2），*this 就是 p2 本体
     }
     
     int age;
@@ -432,9 +432,9 @@ public:
     
     void showPersonAge(){
         // 防止报错
-        if(this == NULL){
-            return;
-        }
+        // if(this == nullptr){
+        //     return;
+        // }
         
         cout << "age = " << age << endl; // 会报错
     }
@@ -443,7 +443,7 @@ public:
 };
 
 void test1(){
-    Person* p = NULL;
+    Person* p = nullptr;
     
     p->showClassName(); // 不报错
     p->showPersonAge(); // 报错
@@ -470,8 +470,8 @@ void test1(){
 class Person{
 public:
     void showPerson() const{
-        this->age; // this为指针常量，指针指向不可修改
-        this->height = 175;
+        // this->age = 20; // 报错：常函数中 this 是 const Person* const，指向常量对象，成员不可修改
+        this->height = 175; // mutable 成员在常函数中可以修改
     }
     
     int age = 18;
@@ -485,7 +485,7 @@ void test1(){
 
 // 常对象
 void test2(){
-    const Person p;
+    const Person p{}; // const 对象不能默认初始化（本类没有用户提供的默认构造函数），用 {} 值初始化
     p.height = 180;
     p.showPerson();
 }
@@ -669,9 +669,9 @@ void test(){
 
 ### 4.2 `<<`左移运算符重载
 
-- **定义：用于自定义类型的输出，常与 ****`cout`**** 配合，实现像内置类型一样的打印效果。**
+- **定义：用于自定义类型的输出，常与 **`cout`** 配合，实现像内置类型一样的打印效果。**
 
-- **注意：第一个参数必须为 ****`ostream&`****（不能是 ****`const`****），第二个参数常加 ****`const`****；需返回 ****`ostream&`**** 以支持链式输出。**
+- **注意：第一个参数必须为 **`ostream&`**（不能是 **`const`**），第二个参数常加 **`const`**；需返回 **`ostream&`** 以支持链式输出。**
 
 - **场景：调试打印、日志记录、显示对象状态信息。**
 
@@ -682,10 +682,10 @@ public:
     int height;
 };
 
-ostream& operator<<(ostream &cout, Person &p){
-    cout << "p.age = " << p.age << endl;
-    cout << "p.height = " << p.height << endl;
-    return cout;
+ostream& operator<<(ostream &os, const Person &p){
+    os << "p.age = " << p.age << endl;
+    os << "p.height = " << p.height << endl;
+    return os;
 }
 
 void test(){
@@ -699,9 +699,9 @@ void test(){
 
 ### 4.3 `++`递增运算符重载
 
-- **定义：为对象提供自增行为，分为前置（****`++i`****）和后置（****`i++`****）两种形式。**
+- **定义：为对象提供自增行为，分为前置（**`++i`**）和后置（**`i++`**）两种形式。**
 
-- **注意：前置返回引用（****`*this`****），后置返回临时对象（值返回）并用 ****`int`**** 占位区分；后置效率略低。**
+- **注意：前置返回引用（**`*this`**），后置返回临时对象（值返回）并用 **`int`** 占位区分；后置效率略低。**
 
 - **场景：迭代器、计数器、索引类型等需要自增逻辑的对象。**
 
@@ -753,7 +753,7 @@ void test2(){
 
 - **定义：控制对象间的赋值行为，解决浅拷贝带来的内存重复释放或数据不一致问题。**
 
-- **注意：要处理自赋值（****`if (this == &p) return *this;`****）；先释放旧资源再分配新空间；返回 ****`*this`**** 以支持链式赋值。**
+- **注意：要处理自赋值（**`if (this == &p) return *this;`**）；先释放旧资源再分配新空间；返回 **`*this`** 以支持链式赋值。**
 
 - **场景：类成员包含指针、文件句柄、动态数组等需要深拷贝的资源管理类。**
 
@@ -807,7 +807,7 @@ void test(){
 
 - **定义：为自定义类型定义相等与不等比较逻辑，使对象能参与条件判断。**
 
-- **注意：****`==`**** 与 ****`!=`**** 通常成对实现，逻辑互为相反；参数可加 ****`const`**** 以保证不修改对象。**
+- **注意：**`==`** 与 **`!=`** 通常成对实现，逻辑互为相反；参数可加 **`const`** 以保证不修改对象。**
 
 - **场景：容器查找、去重、排序比较、业务规则匹配（如用户身份验证）。**
 
@@ -844,7 +844,7 @@ void test(){
 
 - **定义：使对象可以像函数一样被调用，也称“仿函数”或“函数对象”。**
 
-- **注意：可带任意参数和返回值；支持匿名对象调用（****`类名()(参数)`****）。**
+- **注意：可带任意参数和返回值；支持匿名对象调用（**`类名()(参数)`**）。**
 
 - **场景：STL算法中的自定义规则（如排序、遍历）、策略模式、简单闭包行为模拟。**
 
@@ -1227,7 +1227,7 @@ class Animal{
 public:
     void voice(){
         cout << "动物" << endl;
-    };
+    }
 };
 
 class Cat: public Animal{
@@ -1242,18 +1242,21 @@ void test1(Animal &animal){
 }
 
 void test2(){
+    Cat c;
+    test1(c); // 父类引用指向子类对象，输出"动物"（早绑定）
+
     cout << "size of Animal: " << sizeof(Animal) << endl; // 1，类似于空对象
 }
 ```
 
-**解决方式↓，加个****`virtual`**
+**解决方式↓，加个**`virtual`**
 
 ```C++
 class Animal{
 public:
     virtual void voice(){
         cout << "动物" << endl;
-    };
+    }
 };
 
 class Cat: public Animal{
@@ -1268,6 +1271,9 @@ void test1(Animal &animal){
 }
 
 void test2(){
+    Cat c;
+    test1(c); // 父类引用指向子类对象，输出"喵"（晚绑定）
+
     cout << "size of Animal: " << sizeof(Animal) << endl; // 8，虚函数指针占8（Win64）/4（Win32）字节
 }
 ```
@@ -1290,13 +1296,15 @@ void test2(){
 class Base{
 public:
     virtual void func() = 0;
+
+    virtual ~Base() {} // 虚析构：基类指针 delete 派生类对象时才能正确调用派生类析构函数
 };
 
 class Son: public Base{
 public:
     virtual void func(){
         cout << "func调用" << endl;
-    };
+    }
 };
 
 void test(){
@@ -1310,7 +1318,7 @@ void test(){
 
 多态使用时，如果子类中有属性开辟到堆区，那么父类指针在释放时无法调用到子类的析构代码
 
-- 接解决方式：将**父类的析构函数**改为**虚析构**或者**纯虚析构**
+- 解决方式：将**父类的析构函数**改为**虚析构**或者**纯虚析构**
 
 ```C++
 class Animal{
@@ -1320,7 +1328,7 @@ public:
     }
 
     // 虚析构解决内存泄露
-    /*virtual*/ ~Animal(){
+    virtual ~Animal(){
         cout << "Animal析构函数调用" << endl;
     }
 
@@ -1356,6 +1364,8 @@ void test(){
     delete animal;
 }
 ```
+
+**纯虚析构写法：**`virtual ~Animal() = 0;`，且必须在类外提供定义：`Animal::~Animal(){}`
 
 ---
 

@@ -79,6 +79,8 @@
 └── proc/      系统运行信息（虚拟目录）
 ```
 
+以上只列出常用目录，其余目录（/boot、/lib、/opt、/mnt、/media、/sys 等）省略。
+
 **路径符号**
 
 | 符号 | 含义 |
@@ -1210,7 +1212,7 @@ sudo nano /etc/hosts
 
 **作用**
 
-> 创建新用户并设置登录密码。
+> 创建新用户。
 
 **用法**
 
@@ -1225,6 +1227,13 @@ sudo useradd 用户名
 # 创建用户 test
 sudo useradd test
 ```
+
+```bash
+# 设置用户密码
+sudo passwd test
+```
+
+创建的用户默认密码锁定，需用 passwd 设置后才能登录。
 
 ```bash
 # 创建用户并明确创建主目录
@@ -2006,7 +2015,7 @@ chmod +x script.sh
 
 ```text
 Hello Linux
-Wed Oct  8 18:58:00 CST 2026
+Thu Oct  8 18:58:00 CST 2026
 ```
 
 ```bash
@@ -2125,7 +2134,7 @@ date
 输出：
 
 ```text
-Wed Oct  8 18:58:00 CST 2026
+Thu Oct  8 18:58:00 CST 2026
 ```
 
 ```bash
