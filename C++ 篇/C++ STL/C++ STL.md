@@ -1,7 +1,6 @@
 # C++ STL
 
 ## 目录
-
 - [1. 容器Container：存数据](#container)
   - [1.1 vector（动态数组）](#1-1)
   - [1.2 list（双向链表）](#1-2)
@@ -19,13 +18,11 @@
   - [2.3 遍历方式](#2-3)
   - [2.4 迭代器分类](#2-4)
   - [2.5 迭代器失效](#2-5)
-- [3. algorithm：对数据操作（sort/find...）](#algorithm)
+- [3. algorithm：对数据操作](#algorithm)
 - [4. 仿函数与 lambda](#functor)
   - [4.1 仿函数（函数对象）](#4-1)
   - [4.2 lambda 表达式（C++11）](#4-2)
-
 ---
-
 ## 1. 容器Container：存数据 <a id="container"></a>
 
 ### 1.1 vector（动态数组） <a id="1-1"></a>
@@ -198,7 +195,7 @@
 
 #### 1.9.3 小顶堆（队首最小）
 
-```C++
+```cpp
 priority_queue<int, vector<int>, greater<int>> pq;
 ```
 
@@ -249,18 +246,18 @@ priority_queue<int, vector<int>, greater<int>> pq;
 
 ### 2.5 迭代器失效 <a id="2-5"></a>
 
-- vector：插入元素可能因扩容（重新分配内存）导致所有迭代器失效；erase 删除元素即使不扩容，被删位置及其后的迭代器也失效
+- vector：插入元素可能因扩容（重新分配内存）导致所有迭代器失效，即使不扩容，插入位置及其后的迭代器也会失效；erase 删除元素会使被删位置及其后的迭代器失效
 - list、set、map 删除元素后，只有指向被删元素的迭代器失效
 - list、set、map 插入元素不会使迭代器失效
 - 解决办法：用 erase 返回的新迭代器
 
-```C++
+```cpp
 it = v.erase(it); // erase 返回下一个元素的迭代器
 ```
 
 ---
 
-## 3. algorithm：对数据操作（sort/find...） <a id="algorithm"></a>
+## 3. algorithm：对数据操作 <a id="algorithm"></a>
 
 > 💡 binary_search / lower_bound / upper_bound 要求区间已有序；merge 需先给输出容器预留足够容量（如 c.resize(a.size() + b.size())）
 
@@ -292,7 +289,7 @@ it = v.erase(it); // erase 返回下一个元素的迭代器
 - 重载了 `operator()` 的类的对象，可以像函数一样调用
 - STL 算法里的 `greater<int>` 就是一个仿函数，用来比较两个数
 
-```C++
+```cpp
 class Greater{
 public:
     bool operator()(int a, int b){
@@ -310,7 +307,7 @@ g(3, 5); // 像函数一样调用
 - 格式：`[捕获列表](参数列表){ 函数体 }`
 - 常用于 sort 自定义排序
 
-```C++
+```cpp
 sort(v.begin(), v.end(), [](int a, int b){
     return a > b;
 }); // 不用写 cmp 函数，直接传匿名函数

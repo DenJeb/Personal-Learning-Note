@@ -1,23 +1,60 @@
 # C++ 面向对象编程
 
-## 1. 封装
+## 目录
+- [1. 封装](#1)
+  - [1.1 class类](#1-1)
+  - [1.2 class与struct的区别](#1-2)
+- [2. 对象特性](#2)
+  - [2.1 构造函数（对象初始化）和析构函数（对象清理）](#2-1)
+  - [2.2 初始化列表](#2-2)
+  - [2.3 类对象作为类成员](#2-3)
+  - [2.4 静态成员](#2-4)
+  - [2.5 C++对象模型和this指针](#2-5)
+  - [2.6 空指针访问成员函数](#2-6)
+  - [2.7 const修饰成员函数](#2-7)
+- [3. 友元](#3)
+  - [3.1 友元的三种实现方式](#3-1)
+- [4. C++运算符重载](#4)
+  - [4.1 `+`加号运算符重载](#4-1)
+  - [4.2 `<<`左移运算符重载](#4-2)
+  - [4.3 `++`递增运算符重载](#4-3)
+  - [4.4 `=`赋值运算符重载](#4-4)
+  - [4.5 `==`/`!=`关系运算符重载](#4-5)
+  - [4.6 `()`函数调用运算符重载](#4-6)
+- [5. 继承](#5)
+  - [5.1 继承的基本语法](#5-1)
+  - [5.2 继承方式](#5-2)
+  - [5.3 继承中的对象模型](#5-3)
+  - [5.4 继承中的构造和析构顺序](#5-4)
+  - [5.5 继承同名成员处理方式](#5-5)
+  - [5.6 继承同名静态成员处理方式](#5-6)
+  - [5.7 多继承语法](#5-7)
+  - [5.8 菱形继承（钻石继承）](#5-8)
+- [6. 多态](#6)
+  - [6.1 多态基本概念](#6-1)
+  - [6.2 纯虚函数和抽象类](#6-2)
+  - [6.3 虚析构和纯虚析构](#6-3)
+- [7. 文件操作](#7)
+  - [7.1 文本文件](#7-1)
+---
+## 1. 封装 <a id="1"></a>
 
-### 1.1 class类
+### 1.1 class类 <a id="1-1"></a>
 
-```C++
+```cpp
 class 名称{
     属性;
     行为;
 };
 ```
 
-### 1.2 class与struct的区别
+### 1.2 class与struct的区别 <a id="1-2"></a>
 
 struct默认权限为公开，class默认权限为私有。
 
 除此之外，class与struct都能设置权限，区别在默认权限不同：
 
-```C++
+```cpp
 class 名称{
 private:   //私有权限，类内可以访问，类外不能访问，子类不能访问
 protected: //保护权限，类内可以访问，类外不能访问，子类可以访问
@@ -27,9 +64,9 @@ public:    //公共权限，类内可以访问，类外可以访问，子类可�
 
 ---
 
-## 2. 对象特性
+## 2. 对象特性 <a id="2"></a>
 
-### 2.1 构造函数（对象初始化）和析构函数（对象清理）
+### 2.1 构造函数（对象初始化）和析构函数（对象清理） <a id="2-1"></a>
 
 1. 如果我们不写构造和析构函数，编译器会提供
 
@@ -49,7 +86,7 @@ public:    //公共权限，类内可以访问，类外可以访问，子类可�
 
 4. 程序创建对象时会自动调用，且只调用一次
 
-```C++
+```cpp
 class Person{
 public:
     Person(/* 参数 */){
@@ -72,11 +109,11 @@ public:
 
 2. 拷贝构造函数
 
-```C++
+```cpp
 class Person{
 public:
     Person(const Person &p){
-        age = p.age; 
+        age = p.age;
         // 将传入对象的所有属性拷贝到当前对象里
     }
 
@@ -88,7 +125,7 @@ public:
 
 1. **括号法**
 
-```C++
+```cpp
 Person p1;       // 默认构造函数调用
 Person p2(参数); // 有参构造函数调用
 Person p3(p2);   // 拷贝构造函数调用
@@ -96,7 +133,7 @@ Person p3(p2);   // 拷贝构造函数调用
 
 2. 显式法
 
-```C++
+```cpp
 Person p1;
 Person p2 = Person(参数);
 Person p3 = Person(p2);
@@ -104,7 +141,7 @@ Person p3 = Person(p2);
 
 3. 隐式转换法
 
-```C++
+```cpp
 Person p1;
 Person p2 = 参数;
 Person p3 = p2;
@@ -124,17 +161,17 @@ Person p3 = p2;
 
 2. 深拷贝：在堆区重新申请空间，进行拷贝
 
-```C++
+```cpp
 class Person{
 public:
     int age; // 普通成员
     int* height; // 指针成员，数据在堆区
-    
+
     // 构造函数
     Person(int a, int h) : age(a){
         height = new int(h);
     }
-    
+
     // 拷贝构造函数（深拷贝）：在堆区重新申请空间，进行拷贝
     // 如果不写，编译器提供的默认拷贝构造（浅拷贝）会让两个对象的 height 指向同一块堆区内存，
     // 析构时重复释放同一块内存，导致程序崩溃
@@ -149,7 +186,7 @@ public:
             height = nullptr;
         }
     }
-    
+
     void show(){
         cout << "年龄：" << age << " 身高：" << *height << endl;
     }
@@ -161,7 +198,7 @@ int main(){
 
     p1.show();
     p2.show();
-    
+
     return 0;
 }
 ```
@@ -180,7 +217,7 @@ int main(){
 
 4. 程序在销毁对象前会自动调用，且只调用一次
 
-```C++
+```cpp
 class Person{
 public:
     ~Person(){
@@ -189,72 +226,72 @@ public:
 };
 ```
 
-### 2.2 初始化列表
+### 2.2 初始化列表 <a id="2-2"></a>
 
 #### 2.2.1 传统方式初始化
 
-```C++
+```cpp
 class Person{
 public:
     int age;
-    char sex;
+    char gender;
     int height;
-    
-    Person(int a, char s, int h){
+
+    Person(int a, char g, int h){
         age = a;
-        sex = s;
-        height = h;    
+        gender = g;
+        height = h;
     }
-    
+
     void show(){
-        cout << "年龄:" << age << " 性别:" << sex << " 身高:" << height << endl;
+        cout << "年龄:" << age << " 性别:" << gender << " 身高:" << height << endl;
     }
 };
 
 int main(){
     Person p(20, 'M', 175);
     p.show();
-    
+
     return 0;
 }
 ```
 
 #### 2.2.2 初始化列表
 
-```C++
+```cpp
 class Person{
 public:
     int age;
-    char sex;
+    char gender;
     int height;
-    
-    Person(int a, char s, int h) : age(a), sex(s), height(h){}
-    
+
+    Person(int a, char s, int h) : age(a), gender(g), height(h){}
+
     void show(){
-        cout << "年龄:" << age << " 性别:" << sex << " 身高:" << height << endl;
+        cout << "年龄:" << age << " 性别:" << gender << " 身高:" << height << endl;
     }
 };
 
 int main(){
     Person p(20, 'M', 175);
     p.show();
-    
+
     return 0;
 }
 ```
 
-### 2.3 类对象作为类成员
+### 2.3 类对象作为类成员 <a id="2-3"></a>
 
 **构造**对象时先有其他类的对象，再有本对象（下面**构造**先有Phone，再有Person；**析构**的时候**反过来**）
 
-```C++
+```cpp
 class Phone{
 public:
     Phone(string PName){
         cout << "Phone构造函数" << endl;
         Name = PName;
     }
-    
+
     string Name;
 
     ~Phone(){
@@ -277,7 +314,7 @@ public:
 };
 ```
 
-### 2.4 静态成员
+### 2.4 静态成员 <a id="2-4"></a>
 
 - 在成员变量和成员函数前加上**关键字static**，称为静态成员
 
@@ -289,24 +326,24 @@ public:
 
 - 类内声明，类外初始化
 
-```C++
+```cpp
 class Person{
 public:
     static string name;
-    static string sex;
+    static string gender;
     static int age;
 };
 
 int Person::age = 18;
 string Person::name = "Den";
-string Person::sex = "男";
+string Person::gender = "男";
 
 void test(){
     Person p;
-    cout << "姓名：" << p.name << " 性别：" << p.sex << " 年龄：" << p.age << endl;
-    
+    cout << "姓名：" << p.name << " 性别：" << p.gender << " 年龄：" << p.age << endl;
+
     p.age = 19;
-    cout << "姓名：" << p.name << " 性别：" << p.sex << " 年龄：" << p.age << endl;
+    cout << "姓名：" << p.name << " 性别：" << p.gender << " 年龄：" << p.age << endl;
 }
 
 int main(){
@@ -327,7 +364,7 @@ int main(){
 
 - **静态成员函数只能访问静态成员变量**
 
-```C++
+```cpp
 class Person{
 public:
     static void func(){
@@ -337,10 +374,10 @@ public:
 
 void test(){
     Person p;
-    
+
     // 通过对象访问
     p.func();
-    
+
     // 通过类名访问
     Person::func();
 }
@@ -357,17 +394,17 @@ int main(){
 
 **类外不能访问 *private* 的静态成员函数**
 
-### 2.5 C++对象模型和this指针
+### 2.5 C++对象模型和this指针 <a id="2-5"></a>
 
 #### 2.5.1 成员变量 和 成员函数 分开储存
 
-```C++
+```cpp
 class Person{
 public:
-    int age; // 非静态成员变量 sizeof(p) = 4，属于类对象上
-    static int height; // 静态成员变量 sizeof(p) = 4，不属于类对象上
-    void func1(){} // 非静态成员函数 sizeof(p) = 4，不属于类对象上
-    static void func2(){} // 静态成员函数 sizeof(p) = 4，不属于类对象上
+    int age; // 非静态成员变量 sizeof(p) = 4，属于类对象
+    static int height; // 静态成员变量 sizeof(p) = 4，不属于类对象
+    void func1(){} // 非静态成员函数 sizeof(p) = 4，不属于类对象
+    static void func2(){} // 静态成员函数 sizeof(p) = 4，不属于类对象
 };
 
 int Person::height = 175;
@@ -385,19 +422,19 @@ int Person::height = 175;
 
 2. 在类的非静态成员函数中返回对象本身：`return *this`
 
-```C++
+```cpp
 class Person{
 public:
     Person(int age){
         this->age = age;
     }
-    
+
     // Person 后面不加 & 就是 20 岁
-    Person& PersonAddAge(Person &p){  
+    Person& PersonAddAge(Person &p){
         this->age += p.age;
         return *this; // this 指向调用者对象（p2），*this 就是 p2 本体
     }
-    
+
     int age;
 };
 
@@ -421,21 +458,21 @@ void test3(){
 }
 ```
 
-### 2.6 空指针访问成员函数
+### 2.6 空指针访问成员函数 <a id="2-6"></a>
 
-```C++
+```cpp
 class Person{
 public:
     void showClassName(){
         cout << "this is Person class" << endl; // 不会报错
     }
-    
+
     void showPersonAge(){
         // 防止报错
         // if(this == nullptr){
         //     return;
         // }
-        
+
         cout << "age = " << age << endl; // 会报错
     }
 
@@ -444,13 +481,13 @@ public:
 
 void test1(){
     Person* p = nullptr;
-    
+
     p->showClassName(); // 不报错
     p->showPersonAge(); // 报错
 }
 ```
 
-### 2.7 const修饰成员函数
+### 2.7 const修饰成员函数 <a id="2-7"></a>
 
 **常函数：**
 
@@ -466,14 +503,14 @@ void test1(){
 
 - 常对象只能调用常函数
 
-```C++
+```cpp
 class Person{
 public:
     void showPerson() const{
         // this->age = 20; // 报错：常函数中 this 是 const Person* const，指向常量对象，成员不可修改
         this->height = 175; // mutable 成员在常函数中可以修改
     }
-    
+
     int age = 18;
     mutable int height;
 };
@@ -493,25 +530,25 @@ void test2(){
 
 ---
 
-## 3. 友元
+## 3. 友元 <a id="3"></a>
 
 对于一些私有*private*属性，可以用友元访问。
 
 友元的关键字为*friend*
 
-### 3.1 **友元的三种实现方式**
+### 3.1 **友元的三种实现方式** <a id="3-1"></a>
 
 #### 3.1.1 全局函数做友元
 
-```C++
+```cpp
 class Building{
-friend void goodGay(Building *building); // 全局函数goodGay做友元可访问私有成员
+    friend void goodFriend(Building *building); // 全局函数goodFriend做友元可访问私有成员
 
 public:
     Building();
 
     string sittingRoom;
-    
+
 private:
     string bedRoom;
 };
@@ -522,14 +559,14 @@ Building::Building(){
 }
 
 // 全局函数
-void goodGay(Building *building){
-    cout << "goodGay 正在访问你的" << building->sittingRoom << endl;
-    cout << "goodGay 正在访问你的" << building->bedRoom << endl;
+void goodFriend(Building *building){
+    cout << "goodFriend 正在访问你的" << building->sittingRoom << endl;
+    cout << "goodFriend 正在访问你的" << building->bedRoom << endl;
 }
 
 void test(){
     Building building;
-    goodGay(&building);
+    goodFriend(&building);
 }
 ```
 
@@ -537,22 +574,22 @@ void test(){
 
 - 让一个类访问另一个类的私有成员
 
-```C++
+```cpp
 class Building{
-friend class GoodGay;
+    friend class GoodFriend;
 
 public:
     Building();
 
     string sittingRoom;
-    
+
 private:
     string bedRoom;
 };
 
-class GoodGay{
+class GoodFriend{
 public:
-    GoodGay();
+    GoodFriend();
 
     void visit();
 
@@ -564,43 +601,43 @@ Building::Building(){
     bedRoom = "卧室";
 }
 
-GoodGay::GoodGay(){
-    building = new Building;
+GoodFriend::GoodFriend(){
+    building = new Building; // 注意：示例中 new 的空间未释放，实际使用需在析构函数中 delete
 }
 
-void GoodGay::visit(){
-    cout << "goodGay 正在访问你的" << building->sittingRoom << endl;
-    cout << "goodGay 正在访问你的" << building->bedRoom << endl;
+void GoodFriend::visit(){
+    cout << "goodFriend 正在访问你的" << building->sittingRoom << endl;
+    cout << "goodFriend 正在访问你的" << building->bedRoom << endl;
 }
 
 void test(){
-    GoodGay gay;
-    gay.visit();
+    GoodFriend gf;
+    gf.visit();
 }
 ```
 
 #### 3.1.3 成员函数做友元
 
-```C++
+```cpp
 class Building; // 类声明
 
-class GoodGay{
+class GoodFriend{
 public:
-    GoodGay();
-    
+    GoodFriend();
+
     void visit();
-    
+
     Building *building;
 };
 
 class Building{
-friend void GoodGay::visit(); // GoodGay的成员函数
+    friend void GoodFriend::visit(); // GoodFriend的成员函数
 
 public:
     Building();
 
     string sittingRoom;
-    
+
 private:
     string bedRoom;
 };
@@ -610,26 +647,26 @@ Building::Building(){
     bedRoom = "卧室";
 }
 
-GoodGay::GoodGay(){
-    building = new Building;
+GoodFriend::GoodFriend(){
+    building = new Building; // 注意：示例中 new 的空间未释放，实际使用需在析构函数中 delete
 }
 
-void GoodGay::visit(){
-    cout << "goodGay 正在访问你的" << building->sittingRoom << endl;
-    cout << "goodGay 正在访问你的" << building->bedRoom << endl;
+void GoodFriend::visit(){
+    cout << "goodFriend 正在访问你的" << building->sittingRoom << endl;
+    cout << "goodFriend 正在访问你的" << building->bedRoom << endl;
 }
 
 void test(){
-    GoodGay gay;
-    gay.visit();
+    GoodFriend gf;
+    gf.visit();
 }
 ```
 
 ---
 
-## 4. C++运算符重载
+## 4. C++运算符重载 <a id="4"></a>
 
-### 4.1 `+`加号运算符重载
+### 4.1 `+`加号运算符重载 <a id="4-1"></a>
 
 - **定义：为自定义类型实现加法运算，让对象支持 \+ 操作符。**
 
@@ -637,7 +674,7 @@ void test(){
 
 - **场景：常用于数值计算类（如向量、矩阵、坐标点）的合并或累加。**
 
-```C++
+```cpp
 class Person{
 public:
     int age;
@@ -656,7 +693,7 @@ void test(){
     Person p1;
     p1.age = 18;
     p1.height = 175;
-    
+
     Person p2;
     p2.age = 10;
     p2.height = 150;
@@ -667,15 +704,15 @@ void test(){
 }
 ```
 
-### 4.2 `<<`左移运算符重载
+### 4.2 `<<`左移运算符重载 <a id="4-2"></a>
 
-- **定义：用于自定义类型的输出，常与 **`cout`** 配合，实现像内置类型一样的打印效果。**
+- 定义：用于自定义类型的输出，常与 **`cout`** 配合，实现像内置类型一样的打印效果。
 
-- **注意：第一个参数必须为 **`ostream&`**（不能是 **`const`**），第二个参数常加 **`const`**；需返回 **`ostream&`** 以支持链式输出。**
+- 注意：第一个参数必须为 **`ostream&`**（不能是 **`const`**），第二个参数常加 **`const`**；需返回 **`ostream&`** 以支持链式输出。
 
 - **场景：调试打印、日志记录、显示对象状态信息。**
 
-```C++
+```cpp
 class Person{
 public:
     int age;
@@ -697,27 +734,27 @@ void test(){
 }
 ```
 
-### 4.3 `++`递增运算符重载
+### 4.3 `++`递增运算符重载 <a id="4-3"></a>
 
-- **定义：为对象提供自增行为，分为前置（**`++i`**）和后置（**`i++`**）两种形式。**
+- 定义：为对象提供自增行为，分为前置（**`++i`**）和后置（**`i++`**）两种形式。
 
-- **注意：前置返回引用（**`*this`**），后置返回临时对象（值返回）并用 **`int`** 占位区分；后置效率略低。**
+- 注意：前置返回引用（**`*this`**），后置返回临时对象（值返回）并用 **`int`** 占位区分；后置效率略低。
 
 - **场景：迭代器、计数器、索引类型等需要自增逻辑的对象。**
 
-```C++
+```cpp
 class Integer{
 public:
     Integer(){
         num = 0;
     }
-    
+
     // 前置递增，返回引用是为了一直对一个对象进行递增
     Integer& operator++(){
         num++;
         return *this;
     }
-    
+
     // 后置递增，int作为占位参数，用于区分前置递增和后置递增
     Integer operator++(int){
         Integer temp = *this;
@@ -749,15 +786,15 @@ void test2(){
 }
 ```
 
-### 4.4 `=`赋值运算符重载
+### 4.4 `=`赋值运算符重载 <a id="4-4"></a>
 
 - **定义：控制对象间的赋值行为，解决浅拷贝带来的内存重复释放或数据不一致问题。**
 
-- **注意：要处理自赋值（**`if (this == &p) return *this;`**）；先释放旧资源再分配新空间；返回 **`*this`** 以支持链式赋值。**
+- 注意：要处理自赋值（**`if (this == &p) return *this;`**）；先释放旧资源再分配新空间；返回 **`*this`** 以支持链式赋值。
 
 - **场景：类成员包含指针、文件句柄、动态数组等需要深拷贝的资源管理类。**
 
-```C++
+```cpp
 class Person{
 public:
     Person(int age){
@@ -771,6 +808,7 @@ public:
         }
     }
 
+    // 注意：类含指针成员，还应提供拷贝构造函数（深拷贝），否则拷贝时仍会重复释放内存
     Person& operator=(const Person& p){
         // 处理自赋值（如 p1 = p1），否则下面的 delete 会释放自己的数据
         if(this == &p){
@@ -786,7 +824,7 @@ public:
         my_age = new int(*p.my_age);
         return *this;
     }
-    
+
     int *my_age;
 };
 
@@ -794,7 +832,7 @@ void test(){
     Person p1(10);
     Person p2(20);
     Person p3(30);
-   
+
     p3 = p2 = p1;
 
     cout << "p1的年龄为：" << *p1.my_age << endl;
@@ -803,15 +841,15 @@ void test(){
 }
 ```
 
-### 4.5 `==`/`!=`关系运算符重载
+### 4.5 `==`/`!=`关系运算符重载 <a id="4-5"></a>
 
 - **定义：为自定义类型定义相等与不等比较逻辑，使对象能参与条件判断。**
 
-- **注意：**`==`** 与 **`!=`** 通常成对实现，逻辑互为相反；参数可加 **`const`** 以保证不修改对象。**
+- 注意：**`==`** 与 **`!=`** 通常成对实现，逻辑互为相反；参数可加 **`const`** 以保证不修改对象。
 
 - **场景：容器查找、去重、排序比较、业务规则匹配（如用户身份验证）。**
 
-```C++
+```cpp
 class Person{
 public:
     Person(string name, int age) : my_name(name), my_age(age){}
@@ -840,15 +878,15 @@ void test(){
 }
 ```
 
-### 4.6 `()`函数调用运算符重载
+### 4.6 `()`函数调用运算符重载 <a id="4-6"></a>
 
 - **定义：使对象可以像函数一样被调用，也称“仿函数”或“函数对象”。**
 
-- **注意：可带任意参数和返回值；支持匿名对象调用（**`类名()(参数)`**）。**
+- 注意：可带任意参数和返回值；支持匿名对象调用（**`类名()(参数)`**）。
 
 - **场景：STL算法中的自定义规则（如排序、遍历）、策略模式、简单闭包行为模拟。**
 
-```C++
+```cpp
 class MyPrint{
 public:
     void operator()(string txt){
@@ -875,11 +913,11 @@ void test(){
 
 ---
 
-## 5. 继承
+## 5. 继承 <a id="5"></a>
 
-定义一些类时，下级别成员除了拥有上一级的共性，还有自己特性。使用继承，减少重复代码
+定义一些类时，下级成员除了拥有上一级的共性，还有自己的特性。使用继承，减少重复代码
 
-### 5.1 继承的基本语法
+### 5.1 继承的基本语法 <a id="5-1"></a>
 
 - 继承可以减少重复代码
 
@@ -889,7 +927,7 @@ void test(){
 
 - 父类：基类
 
-```C++
+```cpp
 class BasePage{
 public:
     void header(){
@@ -952,7 +990,7 @@ void test(){
 }
 ```
 
-### 5.2 继承方式
+### 5.2 继承方式 <a id="5-2"></a>
 
 #### 5.2.1 公共继承
 
@@ -986,11 +1024,11 @@ void test(){
 
 **注意：父类的 private 成员同样会被继承，只是不可访问。**
 
-### 5.3 继承中的对象模型
+### 5.3 继承中的对象模型 <a id="5-3"></a>
 
 父类中所有**非静态成员**属性都会被子类继承
 
-```C++
+```cpp
 class A{
 public:
     int a;
@@ -1010,11 +1048,11 @@ void test(){
 }
 ```
 
-### 5.4 继承中的构造和析构顺序
+### 5.4 继承中的构造和析构顺序 <a id="5-4"></a>
 
 **构造（父）→构造（子）→析构（子）→析构（父）**
 
-```C++
+```cpp
 class Father{
 public:
     Father(){
@@ -1040,23 +1078,23 @@ void test(){
 }
 ```
 
-### 5.5 继承同名成员处理方式
+### 5.5 继承同名成员处理方式 <a id="5-5"></a>
 
 - 访问子类同名成员，**直接访问**即可
 
 - 访问父类同名成员，需要加**作用域**
 
-```C++
+```cpp
 class Father{
 public:
     Father(){
         age = 40;
     }
-    
+
     void func(){
         cout << "Father 的 func 函数调用" << endl;
     }
-    
+
     int age;
 };
 
@@ -1065,11 +1103,11 @@ public:
     Son(){
         age = 14;
     }
-    
+
     void func(){
         cout << "Son 的 func 函数调用" << endl;
     }
-    
+
     int age;
 };
 
@@ -1082,7 +1120,7 @@ void test(){
 }
 ```
 
-### 5.6 继承同名静态成员处理方式
+### 5.6 继承同名静态成员处理方式 <a id="5-6"></a>
 
 静态成员和非静态成员出现同名，处理方式一致
 
@@ -1090,7 +1128,7 @@ void test(){
 
 - 访问父类同名成员，需要加**作用域**
 
-```C++
+```cpp
 class Father{
 public:
     static int age;
@@ -1114,9 +1152,9 @@ void Son::func(){
 void test(){
     Son s;
     cout << "s.age = " << s.age << endl;
-    cout << "s.Son::age = " << Son::age << endl;
+    cout << "Son::age = " << Son::age << endl;
     cout << "s.Father::age = " << s.Father::age << endl;
-    cout << "s.Son::Father::age = " << Son::Father::age << endl;
+    cout << "Son::Father::age = " << Son::Father::age << endl;
     s.func();
     Son::func();
     s.Father::func();
@@ -1124,7 +1162,7 @@ void test(){
 }
 ```
 
-### 5.7 多继承语法
+### 5.7 多继承语法 <a id="5-7"></a>
 
 C\+\+中允许一个类继承多个类
 
@@ -1132,13 +1170,13 @@ C\+\+中允许一个类继承多个类
 
 **多继承可能引发重名，需加作用域。因此在C\+\+开发中不推荐使用多继承**
 
-```C++
+```cpp
 class Father1{
 public:
     Father1(){
         age = 40;
     }
-    
+
     int age;
 };
 
@@ -1147,7 +1185,7 @@ public:
     Father2(){
         age = 50;
     }
-    
+
     int age;
 };
 
@@ -1156,7 +1194,7 @@ public:
     Son(){
         age = 16;
     }
-    
+
     int age;
 };
 
@@ -1169,13 +1207,13 @@ void test(){
 }
 ```
 
-### 5.8 菱形继承（钻石继承）
+### 5.8 菱形继承（钻石继承） <a id="5-8"></a>
 
 - 概念：两个派生类继承同一个基类，又有某个类同时继承这两个派生类。
 
 - 问题：1\. 最后的子类可能继承两份一样的数据（来自公共基类）→**虚继承**；2\. 使用数据可能产生二义性→**加作用域**
 
-```C++
+```cpp
 class Animal{
 public:
     int age;
@@ -1198,9 +1236,9 @@ void test(){
 
 ---
 
-## 6. 多态
+## 6. 多态 <a id="6"></a>
 
-### 6.1 多态基本概念
+### 6.1 多态基本概念 <a id="6-1"></a>
 
 多态分为两类：
 
@@ -1222,7 +1260,7 @@ void test(){
 
 3. ***父类指针或引用指向子类对象***
 
-```C++
+```cpp
 class Animal{
 public:
     void voice(){
@@ -1249,9 +1287,9 @@ void test2(){
 }
 ```
 
-**解决方式↓，加个**`virtual`**
+解决方式↓，加个**`virtual`**
 
-```C++
+```cpp
 class Animal{
 public:
     virtual void voice(){
@@ -1280,7 +1318,7 @@ void test2(){
 
 虚函数（表）指针`vfptr`，占4字节（32位）/8字节（64位）
 
-### 6.2 纯虚函数和抽象类
+### 6.2 纯虚函数和抽象类 <a id="6-2"></a>
 
 有了纯虚函数的类是抽象类
 
@@ -1292,7 +1330,7 @@ void test2(){
 
 2. 子类必须重写抽象类中的纯虚函数，否则也属于抽象类
 
-```C++
+```cpp
 class Base{
 public:
     virtual void func() = 0;
@@ -1314,13 +1352,13 @@ void test(){
 }
 ```
 
-### 6.3 虚析构和纯虚析构
+### 6.3 虚析构和纯虚析构 <a id="6-3"></a>
 
 多态使用时，如果子类中有属性开辟到堆区，那么父类指针在释放时无法调用到子类的析构代码
 
 - 解决方式：将**父类的析构函数**改为**虚析构**或者**纯虚析构**
 
-```C++
+```cpp
 class Animal{
 public:
     Animal(){
@@ -1347,7 +1385,7 @@ public:
     }
 
     ~Cat(){
-        cout << "Cat析构函数调用" << endl; // 不调用
+        cout << "Cat析构函数调用" << endl; // 若无虚析构，此行不会执行
         if(m_Name != nullptr){
             delete m_Name;
             m_Name = nullptr;
@@ -1360,7 +1398,7 @@ public:
 void test(){
     Animal *animal = new Cat("狸花");
     animal->voice();
-    // 父类指针在析构的时候，不会调用子类的析构函数，导致出现内存泄漏
+    // 若无虚析构，父类指针析构时不会调用子类析构函数，导致内存泄漏
     delete animal;
 }
 ```
@@ -1369,7 +1407,7 @@ void test(){
 
 ---
 
-## 7. 文件操作
+## 7. 文件操作 <a id="7"></a>
 
 C\+\+中对文件操作需要包含`<fstream>`
 
@@ -1377,7 +1415,7 @@ C\+\+中对文件操作需要包含`<fstream>`
 
 1. **文本文件**：以**ASCII码**形式储存在计算机中
 
-2. **二进制文件**：以**二进制**形式储存在计算机中，一般读不懂
+2. **二进制文件**：以**二进制**形式储存在计算机中，一般读不懂（暂未整理）
 
 - 操作文件三大类
 
@@ -1387,11 +1425,11 @@ C\+\+中对文件操作需要包含`<fstream>`
 
 3. `fstream`：读写文件
 
-### 7.1 文本文件
+### 7.1 文本文件 <a id="7-1"></a>
 
 #### 7.1.1 **写文件**
 
-```C++
+```cpp
 #include <fstream> // 1.包含头文件
 
 ofstream ofs; // 2.创建流对象
@@ -1414,7 +1452,7 @@ ofs.close(); // 5.关闭文件
 
 #### 7.1.2 读文件
 
-```C++
+```cpp
 #include <fstream> // 1.包含头文件
 
 ifstream ifs; // 2.创建流对象

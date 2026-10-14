@@ -43,7 +43,7 @@ MySQL 是一款开源免费的关系型数据库管理系统（RDBMS），由瑞
 - 体积小、速度快、成本低，是目前最流行的开源数据库之一
 - 社区版免费，企业版收费
 
-**下载**：Windows 安装器官网下载：[downloads.mysql.com/archives/installer](https://downloads.mysql.com/archives/installer/)
+**下载**：Windows 安装器官网下载地址：[downloads.mysql.com/archives/installer](https://downloads.mysql.com/archives/installer/)
 
 Windows 下 MySQL 以服务方式运行：
 
@@ -942,7 +942,7 @@ DROP FOREIGN KEY fk_emp_dept;
 | NO ACTION / RESTRICT  | 默认行为：父表被引用时禁止删除 / 更新（报错）                |
 | CASCADE               | 父表删除 / 更新时，子表中对应记录也删除 / 更新               |
 | SET NULL              | 父表删除 / 更新时，子表外键字段置为 `NULL`（要求该字段允许为空） |
-| SET DEFAULT           | 父表删除 / 更新时，子表外键字段设为默认值                    |
+| SET DEFAULT           | 父表删除 / 更新时，子表外键字段设为默认值（InnoDB 不支持）                    |
 
 ```sql
 ALTER TABLE emp
@@ -1025,7 +1025,7 @@ INSERT INTO emp VALUES
 
 > **内连接**：只返回两张表之间能匹配上的数据。
 
-隐式写法（`WHERE` 连接条件）：
+隐式写法（`WHERE` 连接条件，即 1.9.2 的写法）：
 
 ```sql
 SELECT e.name, d.name
@@ -1161,7 +1161,7 @@ WHERE (salary, dept_id) = (SELECT salary, dept_id FROM emp WHERE name = 'Tom');
 
 #### 1.9.11 表子查询
 
-返回多行多列，作为临时表放在 `FROM` 后（必须起别名）：
+返回多行多列，作为临时表放在 `FROM` 后（通常需要起别名；MySQL 8.0.14 起可省略）：
 
 ```sql
 -- 查询薪资高于本部门平均薪资的员工

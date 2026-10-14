@@ -4,7 +4,7 @@
 
 使用前先安装依赖库：
 
-```PowerShell
+```shell
 pip install numpy pandas matplotlib seaborn
 ```
 
@@ -34,7 +34,7 @@ pip install numpy pandas matplotlib seaborn
 
 ## 1. NumPy <a id="numpy"></a>
 
-NumPy（Numerical Python）是 Python 科学计算的基础库，其核心是 **ndarray**（N 维数组），可以理解为"高性能的列表"——计算速度比 Python 原生列表更快，功能也更丰富。
+NumPy（Numerical Python）是 Python 科学计算的基础库，其核心是 **ndarray**（N 维数组），可以理解为“高性能的列表”——计算速度比 Python 原生列表更快，功能也更丰富。
 
 ### 1.1 ndarray 的性质 <a id="1-1"></a>
 
@@ -95,7 +95,7 @@ ndarray 的常用创建方式如下：
 - 一维、二维数组：`arr1 + arr2` —— 对应位置的元素逐个相加
 - 列表（实现相同的效果需要循环）：
 
-```Python
+```python
 for i in range(len(list1)):
     list1[i] += list2[i]
 ```
@@ -118,7 +118,7 @@ for i in range(len(list1)):
 | | `np.sin(x)` | 正弦 |
 | | `np.abs(x)` | 绝对值 |
 | | `np.power(a, b)` | a 的 b 次方 |
-| | `np.round(x, n)` | 四舍五入，保留 n 位小数 |
+| | `np.round(x, n)` | 银行家舍入（四舍六入五成双），保留 n 位小数 |
 | 统计 | `np.sum(x)` | 求和 |
 | | `np.mean(x)` | 平均值 |
 | | `np.median(x)` | 中位数 |
@@ -148,11 +148,11 @@ Pandas 建立在 NumPy 之上，是处理表格型数据的核心库，提供两
 
 ### 2.1 核心数据结构——Series <a id="2-1"></a>
 
-Series 是带**标签（索引）**的一维数组，可以理解为"带索引的列表"。
+Series 是带**标签（索引）**的一维数组，可以理解为“带索引的列表”。
 
 #### 2.1.1 Series 的创建
 
-```Python
+```python
 import pandas as pd
 
 # 初始创建
@@ -178,7 +178,7 @@ print(s5)
 
 #### 2.1.2 Series 的属性
 
-```Python
+```python
 import pandas as pd
 
 s = pd.Series([1, 2, 3], index=['A', 'B', 'C'], name="test")
@@ -191,6 +191,8 @@ print(s.ndim)     # 维度数
 print(s.size)     # 元素个数
 ```
 
+#### 2.1.3 Series 访问数据
+
 访问单个元素的四种方式对比：
 
 | 方法 | 索引类型 | 是否支持切片 |
@@ -200,9 +202,7 @@ print(s.size)     # 元素个数
 | `at` | 显式（标签） | 不支持 |
 | `iat` | 隐式（位置） | 不支持 |
 
-#### 2.1.3 Series 访问数据
-
-```Python
+```python
 import pandas as pd
 
 s = pd.Series([1, 2, 3, 4, 5, 6], index=['A', 'B', 'C', 'D', 'E', 'F'], name="test")
@@ -220,11 +220,39 @@ print(s.tail(3))
 
 #### 2.1.4 Series 的常用方法
 
-Series 的常用方法见下图：
+**统计与查看**
 
-![image.png](<图片和附件/image 1.png>)
+| 方法 | 说明 |
+| --- | --- |
+| `head()` | 查看前 n 行数据，默认 5 行 |
+| `tail()` | 查看后 n 行数据，默认 5 行 |
+| `isin()` | 判断元素是否包含在参数集合中 |
+| `isna()` | 判断是否为缺失值（如 NaN 或 None） |
+| `sum()` | 求和，自动忽略缺失值 |
+| `mean()` | 平均值 |
+| `min()` | 最小值 |
+| `max()` | 最大值 |
+| `var()` | 方差 |
+| `std()` | 标准差 |
+| `median()` | 中位数 |
+| `mode()` | 众数（可返回多个） |
+| `quantile(q)` | 分位数，q 取 0~1 之间 |
+| `describe()` | 常见统计信息（count、mean、std、min、25%、50%、75%、max） |
 
-![image.png](<图片和附件/image 2.png>)
+**数据处理与排序**
+
+| 方法 | 说明 |
+| --- | --- |
+| `value_counts()` | 每个唯一值的出现次数 |
+| `count()` | 非缺失值数量 |
+| `nunique()` | 唯一值个数（去重） |
+| `unique()` | 获取去重后的值数组 |
+| `drop_duplicates()` | 去除重复项 |
+| `sample()` | 随机抽样 |
+| `sort_index()` | 按索引排序 |
+| `sort_values()` | 按值排序 |
+| `replace()` | 替换值 |
+| `keys()` | 返回 Series 的索引对象 |
 
 ### 2.2 核心数据结构——DataFrame <a id="2-2"></a>
 
@@ -232,7 +260,7 @@ DataFrame 是带**行索引**和**列名**的二维表格，可以看作多个 S
 
 #### 2.2.1 DataFrame 的创建
 
-```Python
+```python
 import numpy as np
 import pandas as pd
 
@@ -240,8 +268,8 @@ import pandas as pd
 s1 = pd.Series([1, 2, 3, 4, 5])
 s2 = pd.Series([6, 7, 8, 9, 10])
 df = pd.DataFrame({"Line1": s1, "Line2": s2})
-type(df)
-type(df["Line1"])
+print(type(df))
+print(type(df["Line1"]))
 
 # 通过字典创建
 df = pd.DataFrame(
@@ -251,12 +279,12 @@ df = pd.DataFrame(
         "age": [11, 36, 18, 16, 19],
     }, index=[1, 2, 3, 4, 5], columns=["id", "name", "age"]
 )
-df
+print(df)
 ```
 
 #### 2.2.2 DataFrame 的属性
 
-```Python
+```python
 # df 沿用 2.2.1 创建的 DataFrame
 print(df)
 print(df.index)    # 行索引
@@ -271,7 +299,7 @@ print(df.T)        # 转置
 
 #### 2.2.3 DataFrame 访问数据
 
-```Python
+```python
 # df 沿用 2.2.1 创建的 DataFrame
 print(df['name'])            # 访问单列
 print(df.name)               # 通过属性名访问单列
@@ -283,11 +311,32 @@ print(df.sample())           # 随机抽样
 
 #### 2.2.4 DataFrame 的常用方法
 
-DataFrame 的常用方法见下图：
-
-![image.png](<图片和附件/image 3.png>)
-
-![image.png](<图片和附件/image 4.png>)
+| 方法 | 说明 |
+| --- | --- |
+| `head()` | 查看前 n 行数据，默认 5 行 |
+| `tail()` | 查看后 n 行数据，默认 5 行 |
+| `isin()` | 判断元素是否包含在参数集合中 |
+| `isna()` | 判断是否为缺失值（如 NaN 或 None） |
+| `sum()` | 求和，自动忽略缺失值 |
+| `mean()` | 平均值 |
+| `min()` | 最小值 |
+| `max()` | 最大值 |
+| `var()` | 方差 |
+| `std()` | 标准差 |
+| `median()` | 中位数 |
+| `mode()` | 众数（可返回多个） |
+| `quantile(q)` | 分位数，q 取 0~1 之间 |
+| `describe()` | 常见统计信息（count、mean、std、min、25%、50%、75%、max） |
+| `value_counts()` | 每个唯一值的出现次数 |
+| `count()` | 非缺失值数量 |
+| `duplicated()` | 是否重复 |
+| `drop_duplicates()` | 去除重复项 |
+| `sample()` | 随机抽样 |
+| `replace()` | 替换值 |
+| `sort_index()` | 按索引排序 |
+| `sort_values()` | 按值排序 |
+| `nlargest()` | 返回某列最大的 n 条数据 |
+| `nsmallest()` | 返回某列最小的 n 条数据 |
 
 ### 2.3 数据分析常用操作 <a id="2-3"></a>
 
@@ -295,14 +344,14 @@ DataFrame 的常用方法见下图：
 
 #### 2.3.1 数据的导入与导出
 
-```Python
+```python
 df = pd.read_csv("文件位置")   # 导入（后缀决定函数：read_csv / read_excel 等）
 df.to_csv("文件位置")          # 导出
 ```
 
 #### 2.3.2 缺失值的处理
 
-```Python
+```python
 df.dropna()                     # 删除包含缺失值的行
 df.fillna({"列名": 填充值})      # 用指定值填充缺失值
 df.ffill()                      # 向前填充（用上一行的值）
@@ -313,7 +362,7 @@ df.bfill()                      # 向后填充（用下一行的值）
 
 #### 2.3.3 重复值的处理
 
-```Python
+```python
 df.duplicated(['列名'])        # 检测重复值
 df.drop_duplicates(['列名'])   # 删除重复值
 ```
@@ -322,7 +371,7 @@ df.drop_duplicates(['列名'])   # 删除重复值
 
 宽表和长表可以互相转换，也可以把一列拆成多列：
 
-```Python
+```python
 data = pd.DataFrame(
     {
         'name': ['Stephen Curry', 'Klay Thompson', 'Kevin Durant', 'Draymond Green', 'Andre Iguodala'],
@@ -341,14 +390,14 @@ print(melt_data)
 pivot_data = pd.pivot(melt_data, index=['name'], columns='subject', values='score')
 print(pivot_data)
 
-# 分列：按空格把姓名拆成姓、名两列
+# 分列：按空格把姓名拆成名、姓两列
 data[['first_name', 'last_name']] = data['name'].str.split(' ', expand=True)
 print(data)
 ```
 
 #### 2.3.5 数据分箱
 
-```Python
+```python
 # data 沿用 2.3.4 的 data
 
 # 分箱：按分数区间划分等级
@@ -366,7 +415,7 @@ print(data)
 
 #### 2.3.6 时间数据处理
 
-```Python
+```python
 d = pd.Timestamp('2026-06-07 09:00:00')
 print(type(d))
 print("年：", d.year)
@@ -389,7 +438,7 @@ new_df = pd.DataFrame({
 new_df['datetime'] = pd.to_datetime(new_df['date'])
 new_df['weekday'] = new_df['datetime'].dt.day_name()
 print(new_df)
-print(new_df.info())
+new_df.info()
 
 # 设置索引
 new_df.set_index('datetime', inplace=True)
@@ -410,7 +459,7 @@ print(days)
 
 #### 2.3.7 分组聚合
 
-```Python
+```python
 # 接 2.3.6 中的 new_df
 # 分组：按列分组，查看每组的索引
 print(new_df.groupby('weekday').groups)
@@ -446,10 +495,10 @@ Matplotlib 是 Python 最基础的可视化库，seaborn 和 Pandas plot 都建�
 
 ### 3.2 折线图（plot） <a id="3-2"></a>
 
-```Python
+```python
 # 折线图-plot
 import matplotlib.pyplot as plt
-from matplotlib import rcParams  # 导入 rcParams 模块，用于设置图表的字体
+from matplotlib import rcParams  # 导入 rcParams 对象，用于设置图表的字体
 rcParams['font.sans-serif'] = ['SimHei']
 
 # 创建图表，指定图表的大小
@@ -457,10 +506,10 @@ plt.figure(figsize=(10, 5))
 
 # 数据准备
 month = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
-sales = [1080, 1330, 1210, 1190, 1230, 1250, 1320, 1340, 1360, 1280, 1300, 1250]
+expense = [1080, 1330, 1210, 1190, 1230, 1250, 1320, 1340, 1360, 1280, 1300, 1250]
 
 # 绘制折线图
-plt.plot(month, sales, label='开销记录')  # label 参数用于添加图例标签
+plt.plot(month, expense, label='每月开销')  # label 参数用于添加图例标签
 
 # 添加标题
 plt.title('2026年每月开销趋势', color='green', fontsize=20)
@@ -479,7 +528,7 @@ plt.grid(True, alpha=0.4, linestyle='--')  # alpha 设置网格线透明度，li
 plt.yticks(range(1000, 1400, 20))
 
 # 打印每点的坐标，并在图上标注数值
-for x, y in zip(month, sales):
+for x, y in zip(month, expense):
     print(x, y)
     plt.text(x, y + 1, str(y), ha='center', va='bottom', fontsize=10)  # ha 设置水平对齐方式，va 设置垂直对齐方式
 
@@ -489,12 +538,12 @@ plt.show()
 
 ### 3.3 条形图（bar） <a id="3-3"></a>
 
-```Python
+```python
 # 条形图-bar
 # 公共设置（导入、字体、figsize）与结尾的 plt.show() 同 3.2，此处省略
 
 # 数据准备
-AI_tool = ['ChatGPT', 'Claude', 'Gemini', 'DeepSeek', 'GLM', 'Qwen', 'Minimax']
+AI_tool = ['ChatGPT', 'Claude', 'Gemini', 'DeepSeek', 'GLM', 'Qwen', 'MiniMax']
 score = [99, 98, 96, 95, 90, 93, 85]
 
 # 绘制条形图
@@ -519,7 +568,7 @@ plt.yticks(range(0, 110, 10))
 
 ### 3.4 饼图（pie） <a id="3-4"></a>
 
-```Python
+```python
 # 饼图-pie
 # 公共设置（导入、字体、figsize）与结尾的 plt.show() 同 3.2，此处省略
 
@@ -527,7 +576,7 @@ plt.yticks(range(0, 110, 10))
 areas = ['中国', '美国', '俄罗斯', '欧洲', '日本', '其他']
 gdp = [17.8, 27.6, 2.4, 17.6, 3.9, 30.7]
 colors = ['cornflowerblue', 'palegreen', 'navajowhite', 'lightcoral', 'hotpink', 'skyblue']
-explode = [0.1, 0.0, 0.0, 0.0, 0.0, 0.0]  # 爆炸式饼图设计（数值为偏移量，即半径的分数，越大离圆心越远），可用可不用
+explode = [0.1, 0.0, 0.0, 0.0, 0.0, 0.0]  # 爆炸式饼图设计（数值为偏移量，即半径的分数，越大离圆心越远），可选
 
 # 绘制饼图
 plt.pie(gdp,
@@ -547,7 +596,7 @@ plt.legend(loc='lower left', fontsize=7)
 
 ### 3.5 散点图（scatter） <a id="3-5"></a>
 
-```Python
+```python
 # 散点图-scatter
 # 公共设置（导入、字体、figsize）与结尾的 plt.show() 同 3.2，此处省略
 import random  # 散点图需要生成随机数据
@@ -580,7 +629,7 @@ plt.ylim(0, 30)
 
 # 设置 x、y 轴刻度
 plt.xticks(range(0, 11, 1), fontsize=10)
-plt.yticks(range(0, 31, 1), fontsize=10)
+plt.yticks(range(0, 31, 5), fontsize=10)
 
 # 画回归线
 plt.plot([0, 10], [0, 20], color='red', linewidth=2, linestyle='-')  # linestyle='-' 表示实线
@@ -592,9 +641,9 @@ for i in range(50):
 
 ### 3.6 箱线图（boxplot） <a id="3-6"></a>
 
-![image.png](<图片和附件/image 5.png>)
+![image.png](<图片和附件/image.png>)
 
-```Python
+```python
 # 箱线图-boxplot
 # 公共设置（导入、字体）与结尾的 plt.show() 同 3.2，此处省略
 
@@ -609,14 +658,14 @@ data = {
 }
 
 plt.figure(figsize=(10, 7.5))  # 图表尺寸与 3.2 不同，单独设置
-plt.boxplot(data.values(), labels=data.keys())  # labels 表示 x 轴的标签（Matplotlib 3.9+ 该参数更名为 tick_labels）
+plt.boxplot(data.values(), tick_labels=data.keys())  # tick_labels 表示 x 轴的标签（Matplotlib 3.9 起原名 labels 更名为 tick_labels）
 
 # 添加标题
 plt.title("各科成绩分布", fontsize=20)
 plt.ylabel("分数", fontsize=12)
 
 # 添加坐标轴刻度
-plt.yticks(range(60, 101, 1), fontsize=8)
+plt.yticks(range(60, 101, 5), fontsize=8)
 plt.xticks(fontsize=12)
 
 # 添加网格线
@@ -627,7 +676,7 @@ plt.grid(True, axis='y', linestyle='--', alpha=0.5)
 
 seaborn 提供更高层的统计图接口，覆盖多数常用图。下面用 seaborn 重绘 3.3 的条形图：
 
-```Python
+```python
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -635,7 +684,7 @@ import matplotlib.pyplot as plt
 # 中文字体设置同 3.2；数据沿用 3.3 的 AI_tool 和 score
 data = pd.DataFrame({'AI': AI_tool, '评分': score})
 
-# 绘制柱状图
+# 绘制条形图
 plt.figure(figsize=(10, 5))
 sns.barplot(data=data, x='AI', y='评分')
 
@@ -652,30 +701,30 @@ plt.show()
 
 数据分析的完整流程：
 
-```Plain Text
+```text
 ┌─────────────────────────────────────────────┐
-│ ① 数据导入                                  │
+│ (1) 数据导入                                │
 │                                             │
 │    df = pd.read_csv("文件位置")             │
 └──────────────────┬──────────────────────────┘
                    │
                    ▼
 ┌─────────────────────────────────────────────┐
-│ ② 数据清洗                                  │
+│ (2) 数据清洗                                │
 │                                             │
 │    dropna / fillna / 去重 / 分箱            │
 └──────────────────┬──────────────────────────┘
                    │
                    ▼
 ┌─────────────────────────────────────────────┐
-│ ③ 数据分析                                  │
+│ (3) 数据分析                                │
 │                                             │
 │    groupby / melt / 时间序列                │
 └──────────────────┬──────────────────────────┘
                    │
                    ▼
 ┌─────────────────────────────────────────────┐
-│ ④ 数据可视化                                │
+│ (4) 数据可视化                              │
 │                                             │
 │    plt.plot / bar / pie / scatter ...       │
 └─────────────────────────────────────────────┘

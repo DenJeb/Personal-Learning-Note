@@ -138,7 +138,7 @@ async def register(user: User):
 |JSONResponse|默认响应类型|`return {"key": "value"}`|
 |HTMLResponse|返回 HTML 内容|`return HTMLResponse(html_content)`|
 |PlainTextResponse|返回文本内容|`return PlainTextResponse("text")`|
-|StreamingResponse|流式响应|`生成器函数返回数据`|
+|StreamingResponse|流式响应|`return StreamingResponse(generator)`|
 |FileResponse|返回文件下载|`return FileResponse(path)`|
 |RedirectResponse|重定向|`return RedirectResponse(url)`|
 
@@ -237,7 +237,7 @@ async def value_error_handler(request: Request, exc: ValueError):
 
 中间件是一个在每次请求进入 FastAPI 应用时都会被执行的函数，它在请求到达实际路径操作函数之前执行，并且在响应返回给客户端之前再运行一次。
 
-```txt
+```text
 客户端 -> 中间件 -> 路由处理函数 -> 中间件 -> 客户端
 ```
 

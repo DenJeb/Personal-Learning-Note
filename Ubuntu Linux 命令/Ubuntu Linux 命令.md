@@ -73,7 +73,7 @@
 ├── var/       经常变化的数据（如 /var/log 日志）
 ├── tmp/       临时文件
 ├── bin/       基础命令（实际是 /usr/bin 的链接）
-├── sbin/      系统管理命令
+├── sbin/      系统管理命令（实际是 /usr/sbin 的链接）
 ├── root/      root 用户的主目录
 ├── dev/       设备文件
 └── proc/      系统运行信息（虚拟目录）
@@ -1047,7 +1047,7 @@ ls -l
 显示：
 
 ```text
--rwxr-xr-x 1 user user 1024 Aug  9 script.sh
+-rwxr-xr-x 1 user user 1024 Aug  9 12:34 script.sh
 ```
 
 权限分为三组：
@@ -1155,7 +1155,7 @@ chmod 755 目录名
 
 可以设置目录权限。
 
-> ⚠️ **注意**：目录的 `x` 权限表示"可以进入目录"。例如 `chmod 644 test` 会去掉目录的执行权限，导致目录可能无法正常访问。
+> ⚠️ **注意**：目录的 `x` 权限表示"可以进入目录"。例如 `chmod 644 test` 会去掉目录的执行权限，导致目录无法进入、无法访问其中内容。
 
 **解释**
 
@@ -1342,13 +1342,7 @@ sudo usermod -aG dev test
 - `groups` = 查看用户所属组
 - `usermod -aG` = 将用户追加到指定组（`-a` = append，不加 `-a` 会覆盖用户原有的附加组）
 
-Linux 权限管理主要由三部分组成：
-
-| 对象 | 含义 |
-|---|---|
-| user | 文件所有者 |
-| group | 文件所属用户组 |
-| other | 其他用户 |
+Linux 权限管理主要由 user（文件所有者）、group（文件所属用户组）、other（其他用户）三部分组成（同 4.1 节的三组权限表）。
 
 ---
 
@@ -1765,8 +1759,8 @@ ss -tulnp
 输出示例：
 
 ```text
-State  Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
-LISTEN 0      128    0.0.0.0:22          0.0.0.0:*        users:(("sshd",pid=1234,fd=3))
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
+tcp   LISTEN 0      128    0.0.0.0:22          0.0.0.0:*        users:(("sshd",pid=1234,fd=3))
 ```
 
 旧命令（未安装时需 `sudo apt install net-tools`）：
@@ -1776,9 +1770,9 @@ LISTEN 0      128    0.0.0.0:22          0.0.0.0:*        users:(("sshd",pid=123
 netstat -tulnp
 ```
 
-**参数说明**
+**选项说明**
 
-| 参数 | 作用 |
+| 选项 | 作用 |
 |---|---|
 | `-t` | 查看 TCP 连接 |
 | `-u` | 查看 UDP 连接 |
@@ -1845,11 +1839,11 @@ tar -xzvf 压缩包名.tar.gz
 tar -tvf 压缩包名.tar.gz
 ```
 
-**tar 常用参数**
+**tar 常用选项**
 
-| 参数 | 作用 |
+| 选项 | 作用 |
 |---|---|
-| `-c` | create，创建压缩包 |
+| `-c` | create，创建打包文件（归档） |
 | `-x` | extract，解压文件 |
 | `-v` | verbose，显示过程 |
 | `-f` | file，指定文件名 |
