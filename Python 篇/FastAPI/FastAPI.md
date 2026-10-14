@@ -2,6 +2,10 @@
 
 > FastAPI 是一个现代、快速（高性能）的 Python Web 框架，用于构建 API。它基于 Python 的类型提示（Type Hints），使用 Starlette 作为 Web 部分，Pydantic 作为数据部分。
 
+**FastAPI 请求处理流程图**
+
+![FastAPI 请求处理流程图](<图片和附件/FastAPI 请求处理流程图.jpg>)
+
 ## 目录
 
 - [1. 基础入门](#basics)
@@ -55,6 +59,8 @@ if __name__ == "__main__":
 ### 1.2 路由 <a id="1-2"></a>
 
 路由就是**URL 地址**和**处理函数**的映射关系，它决定了当用户访问某个 URL 时，会调用哪个处理函数。
+
+![FastAPI 请求参数来源对照图](<图片和附件/FastAPI 请求参数来源对照图.jpg>)
 
 #### 1.2.1 路径参数
 
@@ -128,6 +134,8 @@ async def register(user: User):
 * `description`：参数描述
 
 ### 1.3 响应 <a id="1-3"></a>
+
+![FastAPI 响应处理流程图](<图片和附件/FastAPI 响应处理流程图.jpg>)
 
 #### 1.3.1 响应类型
 
@@ -241,7 +249,9 @@ async def value_error_handler(request: Request, exc: ValueError):
 客户端 -> 中间件 -> 路由处理函数 -> 中间件 -> 客户端
 ```
 
-中间件可以有多个，执行顺序由代码**自下而上**（例如：2->1->1->2）。
+中间件可以有多个，执行顺序由代码**自下而上**（如下图）。
+
+![FastAPI 中间件请求与响应时序图](<图片和附件/FastAPI 中间件请求与响应时序图.jpg>)
 
 * 代码：
 ```python
@@ -281,6 +291,10 @@ def get_commons(
 async def get_news_list(commons: dict = Depends(get_commons)):
     return commons
 ```
+
+**FastAPI Depends 依赖注入关系图**
+
+![FastAPI Depends 依赖注入关系图](<图片和附件/FastAPI Depends 依赖注入关系图.jpg>)
 
 ---
 
