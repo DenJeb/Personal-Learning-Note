@@ -641,7 +641,7 @@ for i in range(50):
 
 ### 3.6 箱线图（boxplot） <a id="3-6"></a>
 
-![image.png](<图片和附件/image.png>)
+![箱线图要素说明](<图片和附件/箱线图要素.png>)
 
 ```python
 # 箱线图-boxplot
