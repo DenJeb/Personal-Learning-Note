@@ -1,10 +1,10 @@
 <h1 align="center">🧠 个人学习笔记</h1>
 
-<p align="center">随学随记 —— 计算机科学（CS）个人学习笔记，涵盖编程语言、数据库、网络与 Linux</p>
+<p align="center">随学随记 —— 计算机科学（CS）个人学习笔记，涵盖编程语言、数据结构与算法、数据库、网络与 Linux</p>
 
 <p align="center">
-  <img alt="笔记" src="https://img.shields.io/badge/笔记-7篇-4285F4">
-  <img alt="分类" src="https://img.shields.io/badge/分类-5个-34A853">
+  <img alt="笔记" src="https://img.shields.io/badge/笔记-8篇-4285F4">
+  <img alt="分类" src="https://img.shields.io/badge/分类-6个-34A853">
 </p>
 
 ## 📖 仓库简介
@@ -13,6 +13,7 @@
 
 - 💻 **C++ 篇** —— 面向对象编程、STL
 - 🐍 **Python 篇** —— 数据分析、FastAPI
+- 🧮 **数据结构与算法** —— 数据结构
 - 🗄️ **数据库** —— MySQL
 - 🌐 **网络** —— 计算机网络基础
 - 🐧 **Linux** —— Ubuntu 常用命令
@@ -36,6 +37,10 @@
 
 - 📊 [Python 数据分析](Python%20篇/数据分析/Python数据分析.md)
 - ⚡ [FastAPI](Python%20篇/FastAPI/FastAPI.md)
+
+### 🧮 数据结构与算法
+
+- 🌲 [数据结构](数据结构/数据结构.md)
 
 ### 🗄️ 数据库
 
