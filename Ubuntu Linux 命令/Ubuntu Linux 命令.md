@@ -4,6 +4,8 @@
 > 建议配合终端实操。遇到不熟悉的命令，优先使用 `man 命令` 或 `whatis 命令` 查询官方手册。
 > 标记 ⚠️ 的用法有风险，执行前请确认命令无误。
 
+> 🏠 [返回笔记首页](<../README.md>)
+
 ## 目录
 
 - [1. 前置知识：Linux 目录结构](#basics)
@@ -1741,6 +1743,8 @@ sudo ifconfig 接口名 down
   - `wlp2s0` / `wlan0`：无线网络
 - 用 `ip addr` 查看本机实际接口名，再操作对应接口
 
+> 💡 IP 与 DNS 的关系见[网络基础 4](<../网络基础/网络基础.md#4>)。
+
 ---
 
 ### 7.2 netstat 与 ss（网络连接） <a id="cmd-netstat"></a>
@@ -1748,6 +1752,8 @@ sudo ifconfig 接口名 down
 **作用**
 
 > 查看网络连接、监听端口和对应进程。netstat 已过时，新版推荐使用 ss。
+
+> 端口分类与端口冲突见[网络基础 2](<../网络基础/网络基础.md#2>)。
 
 **用法**
 
@@ -1762,6 +1768,8 @@ ss -tulnp
 Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
 tcp   LISTEN 0      128    0.0.0.0:22          0.0.0.0:*        users:(("sshd",pid=1234,fd=3))
 ```
+
+> 💡 示例中的 22 端口是 SSH 的知名端口，见[网络基础 2.1](<../网络基础/网络基础.md#2-1>)。
 
 旧命令（未安装时需 `sudo apt install net-tools`）：
 

@@ -281,6 +281,14 @@
         .replace(/-+/g, '-');
     };
 
+    // 同一标题出现多次时,GitHub 会依次生成 xxx、xxx-1、xxx-2
+    let slugCounts = new Map();
+    const uniqueSlug = base => {
+      const n = slugCounts.get(base) || 0;
+      slugCounts.set(base, n + 1);
+      return n ? `${base}-${n}` : base;
+    };
+
     const escapeHtml = s =>
       s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -291,7 +299,7 @@
       renderer: {
         heading({ tokens, depth }) {
           const html = this.parser.parseInline(tokens);
-          return `<h${depth} id="${slugify(html)}">${html}</h${depth}>`;
+          return `<h${depth} id="${uniqueSlug(slugify(html))}">${html}</h${depth}>`;
         },
         code({ text, lang }) {
           const name = LANG_ALIAS[(lang || '').toLowerCase()] || (lang || '').toLowerCase();
@@ -304,23 +312,112 @@
       },
     });
 
+    // ---------- 路径与路由工具 ----------
+    const safeDecode = s => {
+      try { return decodeURIComponent(s); } catch { return s; }
+    };
+
+    // 规范化笔记路径:处理 ./、../、重复斜杠
+    const normalizePath = p => {
+      const parts = [];
+      for (const part of String(p == null ? '' : p).replace(/\\/g, '/').split('/')) {
+        if (!part || part === '.') continue;
+        if (part === '..') parts.pop();
+        else parts.push(part);
+      }
+      return parts.join('/');
+    };
+
+    const encodePath = p => p.split('/').map(encodeURIComponent).join('/');
+
+    // 拆分 href 的路径与锚点(忽略查询串)
+    const splitHref = href => {
+      const hashAt = href.indexOf('#');
+      const beforeHash = hashAt >= 0 ? href.slice(0, hashAt) : href;
+      const fragment = hashAt >= 0 ? safeDecode(href.slice(hashAt + 1)) : '';
+      const queryAt = beforeHash.indexOf('?');
+      return [queryAt >= 0 ? beforeHash.slice(0, queryAt) : beforeHash, fragment];
+    };
+
+    // 把笔记里的相对路径按“当前笔记所在目录”解析
+    const resolveRelative = (fromPath, relPath) => {
+      const decoded = safeDecode(relPath);
+      if (decoded.startsWith('/')) return normalizePath(decoded);
+      const dir = fromPath.split('/').slice(0, -1).join('/');
+      return normalizePath((dir ? dir + '/' : '') + decoded);
+    };
+
+    let currentFilePath = 'README.md';
+    let loadToken = 0;
+    let scrollTimer = null;
+    let scrollToken = 0;
+
+    const findAnchor = fragment => {
+      const candidates = [fragment];
+      const once = safeDecode(fragment);
+      if (once !== fragment) candidates.push(once);
+      for (const name of candidates) {
+        const byId = document.getElementById(name);
+        if (byId) return byId;
+        const byName = document.getElementsByName(name)[0];
+        if (byName) return byName;
+      }
+      // 兜底:按标题文本或 slug 查找
+      const headings = [...article.querySelectorAll('h1,h2,h3,h4,h5,h6')];
+      return headings.find(h => h.textContent.trim() === fragment || slugify(h.innerHTML) === fragment) || null;
+    };
+
+    function scrollToFragment(fragment) {
+      clearTimeout(scrollTimer);
+      const token = ++scrollToken;
+      if (!fragment) {
+        window.scrollTo(0, 0);
+        return;
+      }
+      const doScroll = smooth => {
+        if (token !== scrollToken) return false;
+        const el = findAnchor(fragment);
+        if (!el) return false;
+        el.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+        return true;
+      };
+      requestAnimationFrame(() => {
+        if (!doScroll(true)) {
+          // 内容/图片可能还在渲染,稍后重试
+          scrollTimer = setTimeout(() => doScroll(false), 120);
+          return;
+        }
+        // 图片加载后布局会变化,再校正一次位置
+        scrollTimer = setTimeout(() => doScroll(false), 350);
+      });
+    }
+
     // ---------- 页面加载 ----------
     const article = document.getElementById('article');
 
-    async function loadPage(path) {
+    async function loadPage(path, fragment = '') {
+      path = normalizePath(safeDecode(path)) || 'README.md';
+      currentFilePath = path;
+      const token = ++loadToken;
+      clearTimeout(scrollTimer);
+      scrollToken++;
       article.innerHTML = '<div class="loading">加载中…</div>';
       setActive(path);
       window.scrollTo(0, 0);
       try {
-        const res = await fetch(path);
+        const res = await fetch(encodePath(path));
         if (!res.ok) throw new Error(res.status);
         const md = await res.text();
+        if (token !== loadToken) return;
+        slugCounts = new Map();
         article.innerHTML = marked.parse(md);
         fixImagePaths(path);
         setTitle();
+        if (fragment) scrollToFragment(fragment);
       } catch (e) {
+        if (token !== loadToken) return;
         article.innerHTML =
-          `<div class="error">笔记加载失败:${path}<br><br>请确认已通过本地服务器打开页面,例如在仓库根目录运行:<br><code>python -m http.server 8000</code></div>`;
+          `<div class="error">笔记加载失败:${escapeHtml(path)}<br><br>请确认已通过本地服务器打开页面,例如在仓库根目录运行:<br><code>python -m http.server 8000</code></div>`;
       }
       if (window.innerWidth <= 900) document.getElementById('sidebar').classList.remove('open');
     }
@@ -349,25 +446,71 @@
     }
 
     // ---------- 路由 ----------
-    // 以 #/ 开头的 hash 是页面路由;其余 hash(如 #1-基础篇)是页内锚点,交给浏览器滚动
-    const currentPath = () => {
-      const hash = decodeURIComponent(location.hash);
-      return hash.startsWith('#/') ? hash.slice(2) || 'README.md' : 'README.md';
+    // 路由格式:#/笔记路径;可带锚点:#/笔记路径#锚点
+    const parseRoute = () => {
+      const raw = location.hash;
+      if (!raw.startsWith('#/')) return null;
+      const rest = raw.slice(2);
+      const hashAt = rest.indexOf('#');
+      const rawPath = hashAt >= 0 ? rest.slice(0, hashAt) : rest;
+      const rawFrag = hashAt >= 0 ? rest.slice(hashAt + 1) : '';
+      return {
+        path: normalizePath(safeDecode(rawPath)) || 'README.md',
+        fragment: rawFrag ? safeDecode(rawFrag) : ''
+      };
+    };
+
+    const routeHash = (path, fragment) =>
+      '#/' + encodePath(path) + (fragment ? '#' + encodeURIComponent(fragment) : '');
+
+    const navigate = (path, fragment = '') => {
+      path = normalizePath(path) || 'README.md';
+      const next = routeHash(path, fragment);
+      if (location.hash === next) {
+        if (path === currentFilePath) scrollToFragment(fragment);
+        else loadPage(path, fragment);
+        return;
+      }
+      location.hash = next;
     };
 
     window.addEventListener('hashchange', () => {
-      if (location.hash.startsWith('#/')) loadPage(currentPath());
+      const route = parseRoute();
+      if (!route) {
+        // 非路由 hash:兼容手动输入的页内锚点
+        const legacy = safeDecode(location.hash.slice(1));
+        if (legacy) scrollToFragment(legacy);
+        return;
+      }
+      if (route.path === currentFilePath) {
+        // 同一篇笔记内跳转:不重新 fetch
+        history.replaceState(null, '', routeHash(route.path, route.fragment));
+        scrollToFragment(route.fragment);
+      } else {
+        loadPage(route.path, route.fragment);
+      }
     });
 
-    // 笔记正文中指向 .md 的链接(如 README 的目录)转为页面路由
+    // 笔记正文中的链接:统一按当前笔记所在目录解析
     article.addEventListener('click', e => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       const a = e.target.closest('a');
       if (!a) return;
       const href = a.getAttribute('href') || '';
-      if (href.endsWith('.md')) {
+      if (!href || /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(href)) return;
+
+      // 只写了 #锚点 的链接:留在当前笔记,但保留 SPA 路由
+      if (href.startsWith('#')) {
         e.preventDefault();
-        location.hash = '#/' + href;
+        const fragment = safeDecode(href.slice(1));
+        if (fragment) navigate(currentFilePath, fragment);
+        return;
       }
+
+      const [rawPath, fragment] = splitHref(href);
+      if (!rawPath.toLowerCase().endsWith('.md')) return;
+      e.preventDefault();
+      navigate(resolveRelative(currentFilePath, rawPath), fragment);
     });
 
     // ---------- 移动端菜单 ----------
@@ -375,7 +518,8 @@
       document.getElementById('sidebar').classList.toggle('open'));
 
     // ---------- 启动 ----------
-    loadPage(currentPath());
+    const initialRoute = parseRoute();
+    loadPage(initialRoute ? initialRoute.path : 'README.md', initialRoute ? initialRoute.fragment : '');
   </script>
 </body>
 </html>
