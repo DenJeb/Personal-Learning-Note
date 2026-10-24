@@ -1423,7 +1423,7 @@ B+Tree 与 B-Tree 的区别：
 | 普通索引 | INDEX                          |
 | 全文索引 | FULLTEXT（用于全文检索）       |
 
-按字段个数：单列索引、联合索引（组合索引，遵循最左前缀法则）。
+按字段个数：单列索引、联合索引（组合索引，遵循[最左前缀法则](#228-索引使用)）。
 
 > 💡 没有主键时，InnoDB 使用第一个非空唯一索引作为聚簇索引；两者都没有时自动生成隐藏的 `row_id`。
 
@@ -1501,6 +1501,98 @@ EXPLAIN SELECT * FROM emp WHERE name = 'Tom';
 | Extra        | 附加信息（Using where / Using index 等）                    |
 
 > 💡 性能优化最关注 `type`（避免 ALL 全表扫描）和 `key`（是否用上索引）。
+
+#### 2.2.8 索引使用
+
+**最左前缀法则**
+
+> 联合索引要遵守**最左前缀法则**：查询条件从索引的最左列开始，且不跳过中间的列，索引才能完整生效。
+
+以联合索引 `idx(a, b, c)` 为例：
+
+| 查询条件                      | 索引使用情况          |
+| ----------------------------- | --------------------- |
+| `WHERE a = 1`                 | 使用 a                |
+| `WHERE a = 1 AND b = 2`       | 使用 a、b             |
+| `WHERE a = 1 AND b = 2 AND c = 3` | 全部使用          |
+| `WHERE b = 2`（缺少最左列 a） | 索引失效              |
+| `WHERE a = 1 AND c = 3`（跳过 b） | 只使用 a，c 用不上 |
+
+**范围查询**
+
+联合索引中，范围查询（`>`、`<`）右侧的列索引失效；`>=`、`<=` 不会失效。
+
+```sql
+-- 联合索引 (profession, age, status)
+-- status 用不到索引：age 是范围查询（>），右侧列失效
+SELECT * FROM tb_user WHERE profession = '软件工程' AND age > 30 AND status = '0';
+
+-- status 可以用到索引：>= 不导致右侧列失效
+SELECT * FROM tb_user WHERE profession = '软件工程' AND age >= 30 AND status = '0';
+```
+
+**索引失效的情况**
+
+1. 在索引列上进行运算或函数操作：`WHERE SUBSTRING(name, 1, 3) = 'Tom'`、`WHERE id + 1 = 10`
+2. 字符串字段与数字比较时不加引号（发生隐式类型转换）：`WHERE sn = 100000003145001`
+3. 头部模糊匹配：`WHERE name LIKE '%张'`（`'张%'` 可以使用索引，`'%张%'` 不行）
+4. 用 `OR` 连接的条件：两侧字段都有索引才生效，任一侧没有索引则整体失效
+5. 数据分布影响：MySQL 评估走索引比全表扫描还慢时（如条件几乎命中全表），会放弃索引
+
+> 💡 是否用上索引看 `EXPLAIN`：`key` 为 NULL 表示未使用，`type` 为 ALL 表示全表扫描。
+
+**SQL 提示**
+
+优化器有时会选错索引，可以手动提示：
+
+```sql
+-- 建议使用指定索引
+SELECT * FROM tb_user USE INDEX (idx_user_pro_age_sta) WHERE profession = '软件工程';
+
+-- 忽略指定索引
+SELECT * FROM tb_user IGNORE INDEX (idx_user_pro_age_sta) WHERE profession = '软件工程';
+
+-- 强制使用指定索引
+SELECT * FROM tb_user FORCE INDEX (idx_user_pro_age_sta) WHERE profession = '软件工程';
+```
+
+**覆盖索引**
+
+> **覆盖索引**：查询需要返回的列在索引中能全部找到，无需回表查询。
+
+- 尽量使用覆盖索引，少用 `SELECT *`
+- `EXPLAIN` 的 `Extra` 列：
+  - `Using index`：使用了覆盖索引，不需要回表
+  - `Using index condition`：用到了索引，但需要回表
+  - `Using where; Using index`：查找用了索引，所需数据也在索引中，无需回表
+
+**前缀索引**
+
+> 字符串字段较长时，可以只对字段的前缀建立索引，减小索引占用的空间。
+
+```sql
+-- 只对 email 的前 5 个字符建索引
+CREATE INDEX idx_user_email ON tb_user (email(5));
+
+-- 计算前缀的区分度，选择合适的前缀长度（越接近 1 越好）
+SELECT COUNT(DISTINCT SUBSTRING(email, 1, 5)) / COUNT(*) FROM tb_user;
+```
+
+**单列索引与联合索引**
+
+查询条件涉及多个字段时，优先建立联合索引：多个单列索引往往只能用上其中一个，且容易回表；联合索引更容易做到覆盖索引。
+
+#### 2.2.9 索引设计原则
+
+1. 数据量较大且查询频繁的表才建立索引（小表直接全表扫描更快）
+2. 常作为 `WHERE`、`ORDER BY`、`GROUP BY` 条件的字段建立索引
+3. 选择**区分度**高的列建索引（区分度 = `COUNT(DISTINCT 列) / COUNT(*)`，越接近 1 越好）；能建唯一索引就建唯一索引
+4. 字符串字段较长时，根据字段特点建立前缀索引
+5. 尽量使用联合索引、减少单列索引——更容易覆盖索引，节省空间、避免回表
+6. 控制索引数量：索引越多，增删改时维护索引的代价越大
+7. 索引列尽量加 `NOT NULL` 约束——优化器知道列不含 NULL 值，能更好地选择索引
+
+> 💡 索引不是越多越好：索引提升查询效率，但占用磁盘空间并拖慢增删改，需要在两者之间权衡。
 
 ---
 
