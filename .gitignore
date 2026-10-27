@@ -1,10 +1,9 @@
-# Obsidian 配置（本地使用，不上传）
 .obsidian/
 
-# 通用
 .trash/
 .DS_Store
 Thumbs.db
 
-# Claude Code obsidian 配置
 .claudian/
+
+StickyNotes/
