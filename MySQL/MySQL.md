@@ -1272,7 +1272,7 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
 ## 2. 进阶篇
 
-> 2.3 及以下章节待补充。
+> 2.4 及以下章节待补充。
 
 ### 2.1 存储引擎
 
@@ -1525,12 +1525,14 @@ EXPLAIN SELECT * FROM emp WHERE name = 'Tom';
 联合索引中，范围查询（`>`、`<`）右侧的列索引失效；`>=`、`<=` 不会失效。
 
 ```sql
--- 联合索引 (profession, age, status)
+-- 建立联合索引 (age, status)
+CREATE INDEX idx_users_age_status ON users (age, status);
+
 -- status 用不到索引：age 是范围查询（>），右侧列失效
-SELECT * FROM tb_user WHERE profession = '软件工程' AND age > 30 AND status = '0';
+SELECT * FROM users WHERE age > 30 AND status = '0';
 
 -- status 可以用到索引：>= 不导致右侧列失效
-SELECT * FROM tb_user WHERE profession = '软件工程' AND age >= 30 AND status = '0';
+SELECT * FROM users WHERE age >= 30 AND status = '0';
 ```
 
 **索引失效的情况**
@@ -1549,13 +1551,13 @@ SELECT * FROM tb_user WHERE profession = '软件工程' AND age >= 30 AND status
 
 ```sql
 -- 建议使用指定索引
-SELECT * FROM tb_user USE INDEX (idx_user_pro_age_sta) WHERE profession = '软件工程';
+SELECT * FROM users USE INDEX (idx_users_age_status) WHERE age = 30;
 
 -- 忽略指定索引
-SELECT * FROM tb_user IGNORE INDEX (idx_user_pro_age_sta) WHERE profession = '软件工程';
+SELECT * FROM users IGNORE INDEX (idx_users_age_status) WHERE age = 30;
 
 -- 强制使用指定索引
-SELECT * FROM tb_user FORCE INDEX (idx_user_pro_age_sta) WHERE profession = '软件工程';
+SELECT * FROM users FORCE INDEX (idx_users_age_status) WHERE age = 30;
 ```
 
 **覆盖索引**
@@ -1573,11 +1575,11 @@ SELECT * FROM tb_user FORCE INDEX (idx_user_pro_age_sta) WHERE profession = '软
 > 字符串字段较长时，可以只对字段的前缀建立索引，减小索引占用的空间。
 
 ```sql
--- 只对 email 的前 5 个字符建索引
-CREATE INDEX idx_user_email ON tb_user (email(5));
+-- 只对 username 的前 5 个字符建索引
+CREATE INDEX idx_users_username_prefix ON users (username(5));
 
 -- 计算前缀的区分度，选择合适的前缀长度（越接近 1 越好）
-SELECT COUNT(DISTINCT SUBSTRING(email, 1, 5)) / COUNT(*) FROM tb_user;
+SELECT COUNT(DISTINCT SUBSTRING(username, 1, 5)) / COUNT(*) FROM users;
 ```
 
 **单列索引与联合索引**
@@ -1599,6 +1601,141 @@ SELECT COUNT(DISTINCT SUBSTRING(email, 1, 5)) / COUNT(*) FROM tb_user;
 ---
 
 ### 2.3 SQL 优化
+
+#### 2.3.1 插入数据优化
+
+**批量插入**：一次插入多条代替多次单条插入，减少事务提交和网络往返开销。
+
+```sql
+-- 推荐：一次插入多条（单次建议 500~1000 条，不要过大）
+INSERT INTO users (username, age)
+VALUES ('Tom', 18), ('Jack', 20), ('Alice', 19);
+```
+
+**手动控制事务**：
+
+```sql
+START TRANSACTION;
+INSERT INTO users (id, username, age) VALUES (1, 'Tom', 18), (2, 'Jack', 20);
+INSERT INTO users (id, username, age) VALUES (3, 'Alice', 19), (4, 'Bob', 21);
+COMMIT;
+```
+
+> 💡 大批量插入时，逐条自动提交会让每条 INSERT 都触发一次事务和日志刷盘，手动包在一个事务里可以大幅减少开销。
+
+**主键顺序插入**：按主键递增顺序插入，比乱序插入快——顺序插入只需追加到 B+Tree 尾部，乱序插入可能触发页分裂。
+
+**大批量插入使用 LOAD 指令**：
+
+```sql
+LOAD DATA LOCAL INFILE '/path/users.csv'
+INTO TABLE users
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n';
+```
+
+> 💡 百万级数据导入时，`LOAD DATA` 比逐条 INSERT 快一个数量级；导入前可临时关闭唯一性校验（`SET UNIQUE_CHECKS = 0`），导入后再开启。
+
+#### 2.3.2 主键优化
+
+InnoDB 的数据按主键顺序组织存储（聚簇索引），因此主键设计直接影响性能。
+
+**页分裂与页合并**：
+
+- 页分裂：乱序插入（如主键用 UUID 随机值）时，新数据可能插入已满的页中间，导致页拆分成两页，浪费空间且降低性能
+- 页合并：删除大量记录后，相邻页的利用率过低时，InnoDB 会把它们合并
+
+**主键设计原则**：
+
+1. 尽量使用**自增主键**（`AUTO_INCREMENT`），保证顺序插入，避免页分裂
+2. 主键尽量短：二级索引叶子节点存的是主键值，主键越长，所有二级索引都越大
+3. 避免使用 UUID、身份证号等作为主键（太长且无序）
+
+> ⚠️ 不要用有业务含义的字段（如手机号）做主键，业务变更时改主键代价极大。
+
+#### 2.3.3 ORDER BY 优化
+
+排序有两种方式：
+
+| 方式         | 说明                                                    |
+| ------------ | ------------------------------------------------------- |
+| Using filesort | 通过索引或全表扫描读出数据，再在内存/磁盘中排序，效率低 |
+| Using index    | 直接按索引的有序性返回结果，无需额外排序，效率高        |
+
+```sql
+-- 联合索引 (age, phone) 下（只查索引列，才能 Using index）
+SELECT age, phone FROM users ORDER BY age;          -- Using index（age 有序）
+SELECT age, phone FROM users ORDER BY age, phone;   -- Using index（联合索引有序）
+SELECT age, phone FROM users ORDER BY phone;        -- Using filesort（不满足最左前缀）
+```
+
+> 💡 优化目标：尽量让 `ORDER BY` 走索引顺序，`EXPLAIN` 的 Extra 中出现 `Using index`。
+
+**多字段排序方向**：联合索引要求排序方向一致，`ORDER BY age ASC, phone DESC` 无法完全利用索引（MySQL 8.0 支持降序索引，可显式创建 `INDEX (age ASC, phone DESC)`）。
+
+#### 2.3.4 GROUP BY 优化
+
+`GROUP BY` 本质是排序后分组，因此同样可以走索引：
+
+- 分组字段满足最左前缀法则时，可利用索引有序性减少排序开销
+- 分组字段顺序与联合索引顺序一致时效率最高
+- 若分组后还需要 `HAVING` 过滤，尽量让过滤条件也能用上索引
+
+```sql
+-- 联合索引 (dept_id, salary)
+SELECT dept_id, AVG(salary) FROM emp GROUP BY dept_id;        -- 可用索引
+SELECT dept_id, AVG(salary) FROM emp GROUP BY dept_id, salary; -- 可用索引
+```
+
+#### 2.3.5 LIMIT 优化
+
+深分页是常见性能问题：`LIMIT 1000000, 10` 需要先扫描并丢弃前 100 万条记录。
+
+```sql
+-- 慢：扫描 100 万 + 10 行
+SELECT * FROM users ORDER BY id LIMIT 1000000, 10;
+```
+
+优化方案：
+
+1. **子查询 + 覆盖索引**：先在索引上定位起始主键，再回表取数据
+
+```sql
+SELECT u.*
+FROM users u
+JOIN (SELECT id FROM users ORDER BY id LIMIT 1000000, 10) t ON u.id = t.id;
+```
+
+2. **基于上一页的最后一条记录**（游标分页，适合连续翻页）：`WHERE id > 上一页最后一条的 id LIMIT 10`
+
+3. **业务约束**：限制最大可翻页数，或改为"加载更多"式分页
+
+#### 2.3.6 COUNT 优化
+
+`COUNT(*)`、`COUNT(1)`、`COUNT(列名)` 的区别：
+
+| 写法         | 说明                                                         |
+| ------------ | ------------------------------------------------------------ |
+| COUNT(*)     | 统计所有行，InnoDB 会选最小的二级索引扫描（不读数据，速度快）|
+| COUNT(1)     | 统计所有行，效果与 COUNT(*) 接近                             |
+| COUNT(列名)  | 只统计该列非 NULL 的行                                       |
+| COUNT(主键)  | 统计所有行（主键非空）                                       |
+
+> 💡 InnoDB 不像 MyISAM 那样在元数据中保存总行数（因为有事务和 MVCC），`COUNT(*)` 需要扫描索引计数。数据量大时，可考虑用计数表维护总数。
+
+#### 2.3.7 UPDATE 优化
+
+`UPDATE` 尽量按**索引字段**定位记录：使用索引时加的是行锁，不走索引时会退化为表锁，并发能力大幅下降。
+
+```sql
+-- 有 id 索引：只锁对应行，其他行可并发修改
+UPDATE users SET age = 20 WHERE id = 1;
+
+-- 无索引字段：扫描全表（相当于锁表），并发性能差
+UPDATE users SET age = 20 WHERE username = 'Tom';
+```
+
+> ⚠️ 与索引无关的条件在事务中执行 UPDATE，容易造成并发阻塞甚至死锁。
 
 ---
 
