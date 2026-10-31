@@ -162,7 +162,7 @@ free(q);
 
 ### 2.3 双链表 <a id="2-3"></a>
 
-> 💡 C++ STL 对应实现：[list](<../C++ 篇/C++ STL/C++ STL.md#1-2>)；MySQL 的 B+Tree 索引叶子节点也用双向链表串联，见 [MySQL 2.2.2](<../MySQL/MySQL.md#222-索引结构>)。
+> 💡 C++ STL 对应实现：[list](<../C++ 篇/C++ STL/C++ STL.md#1-2>)；MySQL 的 B+Tree 索引叶子节点也用双向链表串联，见 [MySQL 2.2.2](<../MySQL/2.2 索引.md#222-索引结构>)。
 
 ```c
 typedef struct DNode {
@@ -1103,13 +1103,13 @@ void Creat_BST(BSTree &T, int str[], int n){
 2. 叶节点之间用指针**链成有序链表**，支持顺序访问和范围查找
 3. 查找**必须进行到叶节点**（分支节点的关键字只是索引，不代表记录存在），所有叶节点的查找路径长度相同
 
-> 💡 MySQL InnoDB 默认使用 B+Tree 作为索引结构，见 [MySQL 2.2.2](<../MySQL/MySQL.md#222-索引结构>)。
+> 💡 MySQL InnoDB 默认使用 B+Tree 作为索引结构，见 [MySQL 2.2.2](<../MySQL/2.2 索引.md#222-索引结构>)。
 
 ### 7.10 散列表（哈希表） <a id="7-10"></a>
 
 散列表：一种数据结构，可以根据数据元素的关键字计算出它在散列表中的存储地址。散列函数（哈希函数）H(key) 建立了"关键字 → 存储地址"的映射关系。
 
-> 💡 C++ STL 对应实现：[unordered_set / unordered_map](<../C++ 篇/C++ STL/C++ STL.md#1-8>)；MySQL 的 Hash 索引见 [2.2.3](<../MySQL/MySQL.md#223-hash-索引>)。
+> 💡 C++ STL 对应实现：[unordered_set / unordered_map](<../C++ 篇/C++ STL/C++ STL.md#1-8>)；MySQL 的 Hash 索引见 [2.2.3](<../MySQL/2.2 索引.md#223-hash-索引>)。
 
 #### 7.10.1 散列函数的构造要求
 
