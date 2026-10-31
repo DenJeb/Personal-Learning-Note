@@ -19,7 +19,7 @@
   - [2.1 存储引擎](#21-存储引擎)
   - [2.2 索引](#22-索引)
   - [2.3 SQL 优化](#23-sql-优化)
-  - [2.4 视图、存储过程、触发器](#24-视图存储过程触发器)
+  - [2.4 视图、存储过程、触发器](#24-视图、存储过程、触发器)
   - [2.5 锁](#25-锁)
   - [2.6 InnoDB 引擎](#26-innodb-引擎)
   - [2.7 MySQL 管理](#27-mysql-管理)
@@ -1272,7 +1272,7 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
 ## 2. 进阶篇
 
-> 2.4 及以下章节待补充。
+> 2.4 的存储过程、触发器部分及 2.5 以下章节待补充。
 
 ### 2.1 存储引擎
 
@@ -1740,6 +1740,127 @@ UPDATE users SET age = 20 WHERE username = 'Tom';
 ---
 
 ### 2.4 视图、存储过程、触发器
+
+#### 2.4.1 视图介绍
+
+> **视图（View）**：一种虚拟存在的表。视图中的数据并不在数据库中实际存储，行和列数据来自定义视图时查询所用的**基表**，在使用视图时动态生成。
+
+- 视图只保存查询的 SQL 逻辑，不保存查询结果
+- 对视图的查询，最终会转换为对基表的查询
+
+#### 2.4.2 视图基本语法
+
+```sql
+-- 创建视图
+CREATE [OR REPLACE] VIEW 视图名称 [(列名列表)]
+AS SELECT 语句
+[WITH [CASCADED | LOCAL] CHECK OPTION];
+
+-- 查看创建视图的语句
+SHOW CREATE VIEW 视图名称;
+
+-- 查询视图数据（与查表一样）
+SELECT * FROM 视图名称;
+
+-- 修改视图（两种方式）
+CREATE OR REPLACE VIEW 视图名称 AS SELECT 语句;
+ALTER VIEW 视图名称 AS SELECT 语句;
+
+-- 删除视图
+DROP VIEW [IF EXISTS] 视图名称 [, 视图名称] ...;
+```
+
+示例：
+
+```sql
+-- 只暴露研发部员工的 id、name、salary
+CREATE VIEW vu_emp_dept1 AS
+SELECT id, name, salary
+FROM emp
+WHERE dept_id = 1;
+
+SELECT * FROM vu_emp_dept1;
+
+SHOW CREATE VIEW vu_emp_dept1;
+
+-- 修改视图定义
+ALTER VIEW vu_emp_dept1 AS
+SELECT id, name, salary, dept_id
+FROM emp
+WHERE dept_id = 1;
+
+-- 删除视图
+DROP VIEW IF EXISTS vu_emp_dept1;
+```
+
+#### 2.4.3 检查选项
+
+> **WITH CHECK OPTION**：对视图执行增删改时，检查数据是否满足视图的 `WHERE` 条件，不满足则拒绝操作。
+
+```sql
+-- 基表 users(id, username, age, status)
+-- v1：成年用户
+CREATE VIEW v1 AS
+SELECT * FROM users WHERE age >= 18;
+
+-- v2：基于 v1，只显示 30 岁以下
+CREATE VIEW v2 AS
+SELECT * FROM v1 WHERE age <= 30
+WITH CASCADED CHECK OPTION;
+
+-- age = 15：不满足 v1 的 age >= 18，被拒绝
+INSERT INTO v2 (username, age) VALUES ('Mike', 15);
+
+-- age = 35：满足 v1，但不满足 v2 自身条件，被拒绝
+INSERT INTO v2 (username, age) VALUES ('Mike', 35);
+```
+
+两种检查方式：
+
+| 选项     | 检查范围                                                                 |
+| -------- | ------------------------------------------------------------------------ |
+| CASCADED | 默认值。检查当前视图**以及所有依赖视图**的条件                           |
+| LOCAL    | 检查当前视图的条件；只有当依赖视图也指定了检查选项时，才检查依赖视图的条件 |
+
+```sql
+-- 改为 LOCAL：v1 没有检查选项，插入 age = 15 只检查 v2 的 age <= 30，可通过
+CREATE OR REPLACE VIEW v2 AS
+SELECT * FROM v1 WHERE age <= 30
+WITH LOCAL CHECK OPTION;
+
+INSERT INTO v2 (username, age) VALUES ('Mike', 15);  -- 成功，但该行在 v1/v2 中不可见
+```
+
+#### 2.4.4 视图更新
+
+视图与基表是一一对应关系时（没有聚合、去重等），可以对视图执行 `INSERT` / `UPDATE` / `DELETE`，修改最终作用到基表上。
+
+以下情况的视图**不可更新**：
+
+1. 使用了聚合函数或窗口函数（`SUM`、`MIN`、`MAX`、`COUNT` 等）
+2. 使用了 `DISTINCT`
+3. 使用了 `GROUP BY`
+4. 使用了 `HAVING`
+5. 使用了 `UNION` 或 `UNION ALL`
+
+> ⚠️ 不可更新的视图仍然可以查询；如果强行对这类视图执行 DML，MySQL 会报错。
+
+#### 2.4.5 视图作用
+
+1. **简化查询**：把多表联查、子查询等复杂 SQL 封装成视图，使用时像查普通表一样简单
+2. **安全**：视图可以只暴露部分行和列，可以把权限授予视图而不是基表，用户看不到敏感数据
+
+```sql
+-- 只开放 id、name 两列给该用户
+CREATE VIEW vu_emp_public AS
+SELECT id, name FROM emp;
+
+GRANT SELECT ON vu_emp_public TO 'dev'@'localhost';
+```
+
+3. **数据独立**：视图可以屏蔽基表结构的部分变化（如基表新增列），只要视图定义不变，依赖视图的应用不需要修改
+
+> 💡 视图本质是一条被保存的 SELECT 语句，合理使用可以简化开发，但不要嵌套过多视图，否则会带来额外的性能开销。
 
 ---
 
