@@ -20,39 +20,33 @@
 
 ---
 
-## 🚀 快速开始
-
-**在线阅读链接👉** <https://denjeb.github.io/Personal-Learning-Note/>。
-
----
-
 ## 📚 笔记目录
 
 ### 💻 C++ 篇
 
-- 🧩 [C++ 面向对象编程](C++%20篇/C++%20面向对象/C++面向对象编程.md)
-- 📦 [C++ STL](C++%20篇/C++%20STL/C++%20STL.md)
+- 🧩 [C++ 面向对象编程](<C++ 篇/C++ 面向对象/C++面向对象编程.md>)
+- 📦 [C++ STL](<C++ 篇/C++ STL/C++ STL.md>)
 
 ### 🐍 Python 篇
 
-- 📊 [Python 数据分析](Python%20篇/数据分析/Python数据分析.md)
-- ⚡ [FastAPI](Python%20篇/FastAPI/FastAPI.md)
+- 📊 [Python 数据分析](<Python 篇/数据分析/Python数据分析.md>)
+- ⚡ [FastAPI](<Python 篇/FastAPI/FastAPI.md>)
 
 ### 🧮 数据结构与算法
 
-- 🌲 [数据结构（C语言）](数据结构/数据结构（C语言）.md)
+- 🌲 [数据结构（C语言）](<数据结构/数据结构（C语言）.md>)
 
 ### 🗄️ 数据库
 
-- 🐬 [MySQL](MySQL/MySQL.md)
+- 🐬 [MySQL](<MySQL/MySQL.md>)
 
 ### 🌐 网络
 
-- 📡 [网络基础](网络基础/网络基础.md)
+- 📡 [网络基础](<网络基础/网络基础.md>)
 
 ### 🐧 Linux
 
-- ⌨️ [Ubuntu Linux 命令](Ubuntu%20Linux%20命令/Ubuntu%20Linux%20命令.md)
+- ⌨️ [Ubuntu Linux 命令](<Ubuntu Linux 命令/Ubuntu Linux 命令.md>)
 
 ---
 
